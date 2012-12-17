@@ -1,0 +1,32 @@
+{
+  "name": "clever-js",
+  "version": "0.0.1",
+  "description": "Server- and client-side library for interacting with the Clever API",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make -B test"
+  },
+  "repository": "",
+  "keywords": [
+    "clever",
+    "javascript",
+    "coffeescript",
+    "library"
+  ],
+  "author": "Rafael Garcia",
+  "license": "BSD",
+  "dependencies": {
+    "async": "~0.1.22",
+    "underscore": "~1.4.3",
+    "coffee-script": "~1.4.0",
+    "quest": "~0.1.4",
+    "underscore.string": "~2.3.1",
+    "dotty": "0.0.1"
+  },
+  "devDependencies": {
+    "mocha": "~1.7.4"
+  }
+}
