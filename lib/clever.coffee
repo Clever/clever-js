@@ -9,10 +9,19 @@ clever =
   api_key: null
   url_base: 'https://api.getclever.com'
 
+# adds pre/post function queues to an object
+class Middlewareable
+  constructor: () ->
+    @_pre  = {}
+    @_post = {}
+  pre:  (event, fn) => (@_pre[event]  ?= []).push fn
+  post: (event, fn) => (@_post[event] ?= []).push fn
+
 # mongoose-like query API for an RESTful HTTP API
 # TODO: stream-like interface for paging
-class Query
+class Query extends Middlewareable
   constructor: (@_url, @_conditions={}, @_options={}) ->
+    super()
     @_curr_path = null
 
     # TODO: all
@@ -77,25 +86,21 @@ class Query
       continue if not _(val).isObject()
       opts.qs[key] = JSON.stringify(val)
     #console.log opts
-    waterfall = [ async.apply(quest, opts) ].concat(@_post?['exec'] or [])
+    waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
     async.waterfall waterfall, cb
 
-  post: (event, fn) -> ((@_post ?= {})[event] ?= []).push fn
-
-class Update
+class Update extends Middlewareable
   constructor: (@_url, @_values) ->
+    super()
   exec: (cb) =>
     opts =
       method: 'put'
       uri: "#{@_url}"
       headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
       json: @_values
-    console.log opts
-    waterfall = [ async.apply(quest, opts) ].concat(@_post?['exec'] or [])
+    #console.log opts
+    waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
     async.waterfall waterfall, cb
-
-  post: (event, fn) -> ((@_post ?= {})[event] ?= []).push fn
-
 
 # adds query-creating functions to a class: find, findOne
 class Resource
@@ -128,7 +133,7 @@ class Resource
     throw Error("Could not get type from uri: #{resp.uri}") if not Klass
     new Klass resp.data, resp.uri, resp.links
 
-  @find: (conditions, fields, options, cb) -> # need to use -> to allow overriding of @path
+  @find: (conditions, fields, options, cb) ->
     [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
     q = new Query "#{clever.url_base}#{@path}", conditions, options
     q.select fields
