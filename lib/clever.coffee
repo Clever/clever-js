@@ -12,7 +12,7 @@ clever =
 # mongoose-like query API for an RESTful HTTP API
 # TODO: stream-like interface for paging
 class Query
-  constructor: (@_url, @_conditions, @_options) ->
+  constructor: (@_url, @_conditions={}, @_options={}) ->
     @_curr_path = null
 
     # TODO: all
@@ -61,14 +61,26 @@ class Query
       console.log 'WARNING: TODO: select fields in the API'
     @
 
+  count: () =>
+    @_options.count = true
+    @
+
   exec: (cb) =>
     opts =
       method: 'get'
       uri: "#{@_url}"
       headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
-      query: _({ where: @_conditions }).extend @_options
+      qs: _({ where: @_conditions }).extend @_options
       json: true
-    quest opts, (err, resp, body) => cb err, body
+    # convert stringify nested query params
+    for key, val of opts.qs
+      continue if not _(val).isObject()
+      opts.qs[key] = JSON.stringify(val)
+    #console.log opts
+    waterfall = [ async.apply(quest, opts) ].concat(@_post?['exec'] or [])
+    async.waterfall waterfall, cb
+
+  post: (event, fn) -> ((@_post ?= {})[event] ?= []).push fn
 
 class Update
   constructor: (@_url, @_values) ->
@@ -79,7 +91,11 @@ class Update
       headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
       json: @_values
     console.log opts
-    quest opts, (err, resp, body) => cb err, body
+    waterfall = [ async.apply(quest, opts) ].concat(@_post?['exec'] or [])
+    async.waterfall waterfall, cb
+
+  post: (event, fn) -> ((@_post ?= {})[event] ?= []).push fn
+
 
 # adds query-creating functions to a class: find, findOne
 class Resource
@@ -101,31 +117,26 @@ class Resource
     [ conditions, fields, options, cb ]
 
   @_create_from_resp: (resp) ->
+    klasses =
+      'districts'   : District
+      'schools'     : School
+      'students'    : Student
+      'teachers'    : Teacher
+      'push/events' : Event
     match = resp.uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
-    switch match[1]
-      when 'districts'
-        return new District resp.data, resp.uri, resp.links
-      when 'schools'
-        return new School resp.data, resp.uri, resp.links
-      when 'sections'
-        return new Section resp.data, resp.uri, resp.links
-      when 'students'
-        return new Student resp.data, resp.uri, resp.links
-      when 'teachers'
-        return new Teacher resp.data, resp.uri, resp.links
-      when 'push/events'
-        return new Event resp.data, resp.uri, resp.links
-      else
-        throw Error("Could not get type from uri: #{resp.uri}")
+    Klass = klasses[match?[1]]
+    throw Error("Could not get type from uri: #{resp.uri}") if not Klass
+    new Klass resp.data, resp.uri, resp.links
 
   @find: (conditions, fields, options, cb) -> # need to use -> to allow overriding of @path
     [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
     q = new Query "#{clever.url_base}#{@path}", conditions, options
     q.select fields
+    q.post 'exec', (resp, body, cb_post) =>
+      results = _(body.data).map (doc) => @_create_from_resp doc
+      cb_post null, results
     return q if not cb
-    q.exec (err, resp) =>
-      results = _(resp.data).map (doc) => @_create_from_resp doc
-      cb err, results
+    q.exec cb
 
   @findOne: (conditions, fields, options, cb) ->
     [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
@@ -151,11 +162,11 @@ class Resource
   save: (cb) =>
     return cb(null) if not _(@_unsaved_values).keys().length
     u = new Update "#{@_uri}", @_unsaved_values
-    u.exec (err, resp) =>
-      if not err
-        @_properties = if _(resp.data).isString()? then JSON.parse(resp.data) else resp.data # httpbin doesn't return json
-        @_unsaved_values = {} if not err?
-      cb err
+    u.post 'exec', (resp, body, cb_post) =>
+      @_properties = if _(body.data).isString()? then JSON.parse(body.data) else body.data # httpbin doesn't return json
+      @_unsaved_values = {} if not err?
+      cb_post()
+    u.exec cb
 
 class District extends Resource
   @path: '/v1.1/districts'

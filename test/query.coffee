@@ -55,3 +55,11 @@ describe 'query', ->
       assert (district instanceof clever.District), "Incorrect type on district object"
       assert.equal district.get('name'), 'Demo District'
       done()
+
+  it 'find with a where condition', (done) ->
+    clever.School.find().where('name').equals('Clever Academy').exec (err, schools) ->
+      assert.equal schools.length, 1
+      school = schools[0]
+      assert (school instanceof clever.School), "Incorrect type on school object"
+      assert.equal school.get('name'), 'Clever Academy'
+      done()
