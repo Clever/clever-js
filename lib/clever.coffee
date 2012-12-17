@@ -68,10 +68,21 @@ class Query
       headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
       query: _({ where: @_conditions }).extend @_options
       json: true
-    quest opts, (err, resp, body) => cb err, body.data
+    quest opts, (err, resp, body) => cb err, body
+
+class Update
+  constructor: (@_url, @_values) ->
+  exec: (cb) =>
+    opts =
+      method: 'put'
+      uri: "#{@_url}"
+      headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
+      json: @_values
+    console.log opts
+    quest opts, (err, resp, body) => cb err, body
 
 # adds query-creating functions to a class: find, findOne
-class Queryable
+class Resource
   @path: null
 
   @_process_args: (conditions, fields, options, cb) ->
@@ -89,29 +100,31 @@ class Queryable
       options = {}
     [ conditions, fields, options, cb ]
 
+  @_create_from_resp: (resp) ->
+    match = resp.uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
+    switch match[1]
+      when 'districts'
+        return new District resp.data, resp.uri, resp.links
+      when 'schools'
+        return new School resp.data, resp.uri, resp.links
+      when 'sections'
+        return new Section resp.data, resp.uri, resp.links
+      when 'students'
+        return new Student resp.data, resp.uri, resp.links
+      when 'teachers'
+        return new Teacher resp.data, resp.uri, resp.links
+      when 'push/events'
+        return new Event resp.data, resp.uri, resp.links
+      else
+        throw Error("Could not get type from uri: #{resp.uri}")
+
   @find: (conditions, fields, options, cb) -> # need to use -> to allow overriding of @path
     [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
     q = new Query "#{clever.url_base}#{@path}", conditions, options
     q.select fields
     return q if not cb
-    q.exec (err, docs) =>
-      results = _(docs).map (doc) =>
-        match = doc.uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
-        switch match[1]
-          when 'districts'
-            return new District doc.data, doc.uri, doc.links
-          when 'schools'
-            return new School doc.data, doc.uri, doc.links
-          when 'sections'
-            return new Section doc.data, doc.uri, doc.links
-          when 'students'
-            return new Student doc.data, doc.uri, doc.links
-          when 'teachers'
-            return new Teacher doc.data, doc.uri, doc.links
-          when 'push/events'
-            return new Event doc.data, doc.uri, doc.links
-          else
-            throw Error("Could not get type from uri: #{doc.uri}")
+    q.exec (err, resp) =>
+      results = _(resp.data).map (doc) => @_create_from_resp doc
       cb err, results
 
   @findOne: (conditions, fields, options, cb) ->
@@ -132,22 +145,34 @@ class Queryable
   get: (key) =>
     dotty.get @_properties, key
 
-class District extends Queryable
+  set: (key, val) =>
+    dotty.put @_unsaved_values, key, val
+
+  save: (cb) =>
+    return cb(null) if not _(@_unsaved_values).keys().length
+    u = new Update "#{@_uri}", @_unsaved_values
+    u.exec (err, resp) =>
+      if not err
+        @_properties = if _(resp.data).isString()? then JSON.parse(resp.data) else resp.data # httpbin doesn't return json
+        @_unsaved_values = {} if not err?
+      cb err
+
+class District extends Resource
   @path: '/v1.1/districts'
 
-class School extends Queryable
+class School extends Resource
   @path: '/v1.1/schools'
 
-class Section extends Queryable
+class Section extends Resource
   @path: '/v1.1/sections'
 
-class Student extends Queryable
+class Student extends Resource
   @path: '/v1.1/students'
 
-class Teacher extends Queryable
+class Teacher extends Resource
   @path: '/v1.1/teachers'
 
-class Event extends Queryable
+class Event extends Resource
   @path: '/v1.1/push/events'
 
 _(clever).extend
