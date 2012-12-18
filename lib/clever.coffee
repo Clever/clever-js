@@ -124,7 +124,7 @@ class Resource
       options = {}
     [ conditions, fields, options, cb ]
 
-  @_create_from_resp: (resp) ->
+  @_uri_to_class: (uri) ->
     klasses =
       'districts'   : District
       'schools'     : School
@@ -132,10 +132,10 @@ class Resource
       'sections'    : Section
       'teachers'    : Teacher
       'push/events' : Event
-    match = resp.uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
+    match = uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
     Klass = klasses[match?[1]]
-    throw Error("Could not get type from uri: #{resp.uri}, #{match}") if not Klass
-    new Klass resp.data, resp.uri, resp.links
+    throw Error("Could not get type from uri: #{uri}, #{match}") if not Klass
+    Klass
 
   @find: (conditions, fields, options, cb) ->
     [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
@@ -144,7 +144,9 @@ class Resource
     q.post 'exec', (resp, body, cb_post) =>
       q.paging = body.paging
       if body.data
-        results = _(body.data).map (doc) => @_create_from_resp doc
+        results = _(body.data).map (doc) =>
+          Klass = @_uri_to_class(doc.uri)
+          new Klass doc.data, doc.uri, doc.links
         cb_post null, results
       else if body.count
         cb_post null, body.count
