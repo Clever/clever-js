@@ -12,6 +12,7 @@ describe 'update', ->
     clever.url_base = 'http://httpbin.org'
 
   it 'submits put requests', (done) ->
+    @timeout 30000
     district = new clever.District { name: 'Test' }, 'http://httpbin.org/put'
     district.set 'location.address', 'Tacos'
     district.save (err) ->
