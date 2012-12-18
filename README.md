@@ -12,9 +12,9 @@ npm install clever
 
 ## Usage
 
-```coffeescript
-clever = require 'clever'
-clever.api_key = 'YOUR_API_KEY'
+```javascript
+var clever = require('clever');
+clever.api_key = 'YOUR_API_KEY';
 ```
 
 The `clever` package exposes objects corresponding to resources:
