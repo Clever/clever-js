@@ -1,6 +1,6 @@
 {
   "name": "clever",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Node.js library for interacting with the Clever API",
   "author": "Clever <support@getclever.com>",
   "keywords": ["clever", "api", "javascript", "coffeescript", "library"],
@@ -20,7 +20,7 @@
     "npm": ">=1.1.5"
   },
   "scripts": {
-    "test": "make -B test"
+    "test": "make -B test",
     "test-cov": "make -B test-cov"
   }
 }
