@@ -202,6 +202,7 @@ class Event extends Resource
   @path: '/v1.1/push/events'
 
 _(clever).extend
+  Resource : Resource
   District : District
   School   : School
   Section  : Section
