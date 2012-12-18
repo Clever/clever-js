@@ -1,9 +1,10 @@
-async     = require 'async'
-_         = require 'underscore'
-_.str     = require('underscore.string');
+async       = require 'async'
+_           = require 'underscore'
+_.str       = require('underscore.string');
 _.mixin _.str.exports()
-quest     = require 'quest'
-dotty     = require 'dotty'
+quest       = require 'quest'
+dotty       = require 'dotty'
+QueryStream = require "#{__dirname}/querystream"
 
 clever =
   api_key: null
@@ -89,6 +90,8 @@ class Query extends Middlewareable
     waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
     async.waterfall waterfall, cb
 
+  stream: () => new QueryStream @
+
 class Update extends Middlewareable
   constructor: (@_url, @_values) ->
     super()
@@ -102,7 +105,7 @@ class Update extends Middlewareable
     waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
     async.waterfall waterfall, cb
 
-# adds query-creating functions to a class: find, findOne
+# adds query-creating functions to a class: find, findOne, etc.
 class Resource
   @path: null
 
@@ -126,11 +129,12 @@ class Resource
       'districts'   : District
       'schools'     : School
       'students'    : Student
+      'sections'    : Section
       'teachers'    : Teacher
       'push/events' : Event
     match = resp.uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
     Klass = klasses[match?[1]]
-    throw Error("Could not get type from uri: #{resp.uri}") if not Klass
+    throw Error("Could not get type from uri: #{resp.uri}, #{match}") if not Klass
     new Klass resp.data, resp.uri, resp.links
 
   @find: (conditions, fields, options, cb) ->
@@ -138,8 +142,14 @@ class Resource
     q = new Query "#{clever.url_base}#{@path}", conditions, options
     q.select fields
     q.post 'exec', (resp, body, cb_post) =>
-      results = _(body.data).map (doc) => @_create_from_resp doc
-      cb_post null, results
+      q.paging = body.paging
+      if body.data
+        results = _(body.data).map (doc) => @_create_from_resp doc
+        cb_post null, results
+      else if body.count
+        cb_post null, body.count
+      else
+        throw Error "Could not parse query response: #{body}, #{JSON.stringify q, undefined, 2}"
     return q if not cb
     q.exec cb
 

@@ -6,9 +6,10 @@ _         = require 'underscore'
 describe 'query', ->
 
   clever = null
-  before () ->
+  before ->
     clever = require "#{__dirname}/../index"
     clever.api_key = 'DEMO_KEY'
+    clever.url_base = 'https://api.getclever.com'
 
   it 'find with no arguments', (done) ->
     clever.District.find (err, districts) ->
@@ -62,4 +63,9 @@ describe 'query', ->
       school = schools[0]
       assert (school instanceof clever.School), "Incorrect type on school object"
       assert.equal school.get('name'), 'Clever Academy'
+      done()
+
+  it 'count works', (done) ->
+    clever.School.find().where('name').equals('Clever Academy').count().exec (err, count) ->
+      assert.equal count, 1
       done()
