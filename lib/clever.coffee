@@ -187,14 +187,22 @@ class Resource
 
   to_json: () => _(@_properties).clone()
 
-  fetch: (second_level_endpoint, cb) =>
-    return cb 'not supported' if second_level_endpoint isnt 'properties'
-    opts =
-      method: 'get'
-      uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/#{second_level_endpoint}"
-      auth: clever.api_key
-      json: true
-    quest opts, (err, resp, body) => cb err, body?.data
+  properties: (obj, cb) =>
+    if _.isFunction(obj)
+      cb = obj
+      opts =
+        method: 'get'
+        uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
+        auth: clever.api_key
+        json: true
+      quest opts, (err, resp, body) => cb err, body?.data
+    else
+      opts =
+        method: 'put'
+        uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
+        auth: clever.api_key
+        json: obj
+      quest opts, (err, resp, body) => cb err, body?.data
 
 class District extends Resource
   @path: '/v1.1/districts'
