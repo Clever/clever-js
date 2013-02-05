@@ -188,21 +188,15 @@ class Resource
   to_json: () => _(@_properties).clone()
 
   properties: (obj, cb) =>
-    if _.isFunction(obj)
+    opts =
+      method: 'put'
+      uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
+      auth: clever.api_key
+      json: obj
+    if _(obj).isFunction()
       cb = obj
-      opts =
-        method: 'get'
-        uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        auth: clever.api_key
-        json: true
-      quest opts, (err, resp, body) => cb err, body?.data
-    else
-      opts =
-        method: 'put'
-        uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        auth: clever.api_key
-        json: obj
-      quest opts, (err, resp, body) => cb err, body?.data
+      _(opts).extend { method: 'get', json: true }
+    quest opts, (err, resp, body) => cb err, body?.data
 
 class District extends Resource
   @path: '/v1.1/districts'

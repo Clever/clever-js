@@ -11,6 +11,8 @@ describe 'get/set properties', ->
     clever.api_key = 'DEMO_KEY'
     clever.url_base = 'https://api.getclever.com'
 
+  after -> nock.cleanAll()
+
   it 'can hit second-level for properties', (done) ->
     nock('https://api.getclever.com:443')
       .get('/v1.1/districts?where=%7B%22id%22%3A%224fd43cc56d11340000000005%22%7D&limit=1').reply(200,
