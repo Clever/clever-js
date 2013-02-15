@@ -2,14 +2,13 @@ async     = require 'async'
 assert    = require 'assert'
 _         = require 'underscore'
 nock      = require 'nock'
+Clever    = require "#{__dirname}/../index"
 
 describe 'get/set properties', ->
 
   clever = null
   before ->
-    clever = require "#{__dirname}/../index"
-    clever.api_key = 'DEMO_KEY'
-    clever.url_base = 'https://api.getclever.com'
+    clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
 
   after -> nock.cleanAll()
 

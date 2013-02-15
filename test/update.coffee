@@ -2,14 +2,13 @@ async     = require 'async'
 fs        = require 'fs'
 assert    = require 'assert'
 _         = require 'underscore'
+Clever    = require "#{__dirname}/../index"
 
 describe 'update', ->
 
   clever = null
   before () ->
-    clever = require "#{__dirname}/../index"
-    clever.api_key = 'DEMO_KEY'
-    clever.url_base = 'http://httpbin.org'
+    clever = Clever 'DEMO_KEY', 'http://httpbin.org'
 
   it 'submits put requests', (done) ->
     @timeout 30000

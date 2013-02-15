@@ -2,14 +2,13 @@ async     = require 'async'
 fs        = require 'fs'
 assert    = require 'assert'
 _         = require 'underscore'
+Clever    = require "#{__dirname}/../index"
 
 describe 'querystream', ->
 
   clever = null
   before ->
-    clever = require "#{__dirname}/../index"
-    clever.api_key = 'DEMO_KEY'
-    clever.url_base = 'https://api.getclever.com'
+    clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
 
   it 'takes care of paging for you', (done) ->
     @timeout 40000
