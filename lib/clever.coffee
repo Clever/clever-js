@@ -1,10 +1,10 @@
 async       = require 'async'
 _           = require 'underscore'
-_.str       = require('underscore.string');
-_.mixin _.str.exports()
+_.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
 QueryStream = require "#{__dirname}/querystream"
+_(_.str.exports()).mixin()
 
 module.exports = (api_key, url_base='https://api.getclever.com') ->
   throw new Error 'Must provide api_key' if not api_key
@@ -55,22 +55,14 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       @
 
     exists: (path, val) =>
-      if not arguments.length
-        path = @_curr_path
-        val = true
-      else if arguments.length is 1
-        if _(path).isBoolean()
-          path = @_curr_path
-          val = true
-        else
-          val = true
+      val = true
+      path = @_curr_path if not arguments.length or (arguments.length is 1 and _(path).isBoolean())
       path_conds = @_conditions[path] or (@_conditions[path] = {})
       path_conds.$exists = val
       @
 
     select: (arg) =>
-      if arg
-        console.log 'WARNING: TODO: select fields in the API'
+      console.log 'WARNING: TODO: select fields in the API' if arg
       @
 
     count: () =>
@@ -85,18 +77,15 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         qs: _({ where: @_conditions }).extend @_options
         json: true
       # convert stringify nested query params
-      for key, val of opts.qs
-        continue if not _(val).isObject()
-        opts.qs[key] = JSON.stringify(val)
+      opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       #console.log opts
-      waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
+      waterfall = [async.apply quest, opts].concat @_post['exec'] or []
       async.waterfall waterfall, cb
 
     stream: () => new QueryStream @
 
   class Update extends Middlewareable
-    constructor: (@_url, @_values) ->
-      super()
+    constructor: (@_url, @_values) -> super()
     exec: (cb) =>
       opts =
         method: 'put'
@@ -104,7 +93,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
         json: @_values
       #console.log opts
-      waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
+      waterfall = [async.apply quest, opts].concat @_post['exec'] or []
       async.waterfall waterfall, cb
 
   # adds query-creating functions to a class: find, findOne, etc.
@@ -160,8 +149,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     @findOne: (conditions, fields, options, cb) ->
       [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
       _(options).extend { limit: 1 }
-      @find conditions, fields, options, (err, docs) ->
-        cb err, docs[0]
+      @find conditions, fields, options, (err, docs) -> cb err, docs[0]
 
     @findById: (id, fields, options, cb) ->
       throw Error('must specify an ID for findById') if not id or not _(id).isString()
@@ -169,17 +157,14 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
       @findOne conditions, fields, options, cb
 
-    constructor: (@_properties, @_uri, @_links) ->
-      @_unsaved_values = {}
+    constructor: (@_properties, @_uri, @_links) -> @_unsaved_values = {}
 
-    get: (key) =>
-      dotty.get @_properties, key
+    get: (key) => dotty.get @_properties, key
 
-    set: (key, val) =>
-      dotty.put @_unsaved_values, key, val
+    set: (key, val) => dotty.put @_unsaved_values, key, val
 
     save: (cb) =>
-      return cb(null) if not _(@_unsaved_values).keys().length
+      return cb null if not _(@_unsaved_values).keys().length
       u = new Update "#{@_uri}", @_unsaved_values
       u.post 'exec', (resp, body, cb_post) =>
         @_properties = if _(body.data).isString()? then JSON.parse(body.data) else body.data # httpbin doesn't return json
@@ -202,19 +187,14 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
 
   class District extends Resource
     @path: '/v1.1/districts'
-
   class School extends Resource
     @path: '/v1.1/schools'
-
   class Section extends Resource
     @path: '/v1.1/sections'
-
   class Student extends Resource
     @path: '/v1.1/students'
-
   class Teacher extends Resource
     @path: '/v1.1/teachers'
-
   class Event extends Resource
     @path: '/v1.1/push/events'
 

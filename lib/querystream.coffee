@@ -1,10 +1,10 @@
 async       = require 'async'
 _           = require 'underscore'
-_.str       = require('underscore.string');
-_.mixin _.str.exports()
+_.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
-Stream      = require('stream').Stream
+{Stream}    = require 'stream'
+_(_.str.exports()).mixin()
 
 # takes in a Query, runs it and emits events
 class QueryStream extends Stream
