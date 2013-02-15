@@ -6,9 +6,7 @@ Clever    = require "#{__dirname}/../index"
 
 describe 'get/set properties', ->
 
-  clever = null
-  before ->
-    clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
+  before -> @clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
 
   after -> nock.cleanAll()
 
@@ -31,11 +29,11 @@ describe 'get/set properties', ->
       )
     district = null
     async.waterfall [
-      (cb_wf) ->
-        clever.District.findById '4fd43cc56d11340000000005', cb_wf
-      (_district, cb_wf) ->
+      (cb_wf) =>
+        @clever.District.findById '4fd43cc56d11340000000005', cb_wf
+      (_district, cb_wf) =>
         district = _district
-        assert (district instanceof clever.District), "Incorrect type on district object"
+        assert (district instanceof @clever.District), "Incorrect type on district object"
         assert.equal district.get('name'), 'Test District'
         district.properties cb_wf
       (properties, cb_wf) ->
