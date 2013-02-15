@@ -13,8 +13,8 @@ npm install clever
 ## Usage
 
 ```javascript
-var clever = require('clever');
-clever.api_key = 'YOUR_API_KEY';
+Clever = require('clever');
+var clever = Clever('YOUR_API_KEY');
 ```
 
 The `clever` package exposes objects corresponding to resources:
