@@ -30,7 +30,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       # TODO: all
       _('gt gte lt lte ne in nin regex size').chain().words().each (conditional) =>
         @[conditional] = (path, val) =>
-          if (arguments.length is 1)
+          if arguments.length is 1
             val = path
             path = @_curr_path
           path_conds = @_conditions[path] or (@_conditions[path] = {})
