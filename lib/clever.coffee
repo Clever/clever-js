@@ -55,9 +55,17 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       @
 
     exists: (path, val) =>
-      val = true
-      path = @_curr_path if not arguments.length or (arguments.length is 1 and _(path).isBoolean())
-      path_conds = @_conditions[path] or (@_conditions[path] = {})
+      if not arguments?.length
+        val = true
+        path = @_curr_path
+      else if arguments.length is 1
+        if _(path).isBoolean()
+          val = path
+          path = @_curr_path
+        else
+          val = true
+      @_conditions[path] ?= {}
+      path_conds = @_conditions[path]
       path_conds.$exists = val
       @
 
@@ -139,10 +147,10 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
             Klass = @_uri_to_class(doc.uri)
             new Klass doc.data, doc.uri, doc.links
           cb_post null, results
-        else if body.count
+        else if body.count?
           cb_post null, body.count
         else
-          throw Error "Could not parse query response: #{body}, #{JSON.stringify q, undefined, 2}"
+          throw Error "Could not parse query response: #{JSON.stringify body}, #{JSON.stringify q, undefined, 2}"
       return q if not cb
       q.exec cb
 

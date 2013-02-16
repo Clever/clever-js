@@ -48,6 +48,7 @@ describe 'query', ->
     )
 
   it 'findById', (done) ->
+    @timeout 20000
     @clever.District.findById "4fd43cc56d11340000000005", (err, district) =>
       assert not _(district).isArray()
       assert (district instanceof @clever.District), "Incorrect type on district object"
@@ -65,4 +66,29 @@ describe 'query', ->
   it 'count works', (done) ->
     @clever.School.find().where('name').equals('Clever Academy').count().exec (err, count) ->
       assert.equal count, 1
+      done()
+
+  it 'exists true with where works', (done) ->
+    @clever.School.find().where('name').exists(true).count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists without args works', (done) ->
+    @clever.School.find().where('name').exists().count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists true works', (done) ->
+    @clever.School.find().exists('name', true).count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists false with where works', (done) ->
+    @clever.School.find().where('name').exists(false).count().exec (err, count) ->
+      assert.equal count, 0
+      done()
+
+  it 'exists false works', (done) ->
+    @clever.School.find().exists('name', false).count().exec (err, count) ->
+      assert.equal count, 0
       done()
