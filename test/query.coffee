@@ -6,7 +6,7 @@ Clever    = require "#{__dirname}/../index"
 
 describe 'query', ->
 
-  before -> @clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
+  before -> @clever = Clever 'DEMO_KEY'
 
   it 'find with no arguments', (done) ->
     @clever.District.find (err, districts) =>
