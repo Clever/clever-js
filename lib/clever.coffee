@@ -81,7 +81,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         method: 'get'
         uri: "#{@_url}"
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
-        qs: _(where: @_conditions ).extend @_options
+        qs: _(where: @_conditions).extend @_options
         json: true
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
