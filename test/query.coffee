@@ -23,6 +23,14 @@ describe 'query', ->
       assert.equal district.get('name'), 'Demo District'
       done()
 
+  it 'find with conditions and exec', (done) ->
+    @clever.District.find(id: "4fd43cc56d11340000000005").exec (err, districts) =>
+      assert.equal districts.length, 1
+      district = districts[0]
+      assert (district instanceof @clever.District), "Incorrect type on district object"
+      assert.equal district.get('name'), 'Demo District'
+      done()
+
   it 'findOne with no arguments', (done) ->
     @clever.District.findOne (err, district) =>
       assert not _(district).isArray()
