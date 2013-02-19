@@ -1,10 +1,10 @@
 async       = require 'async'
 _           = require 'underscore'
-_.str       = require('underscore.string');
-_.mixin _.str.exports()
+_.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
 QueryStream = require "#{__dirname}/querystream"
+_(_.str.exports()).mixin()
 
 module.exports = (api_key, url_base='https://api.getclever.com') ->
   throw new Error 'Must provide api_key' if not api_key
@@ -30,11 +30,11 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       # TODO: all
       _('gt gte lt lte ne in nin regex size').chain().words().each (conditional) =>
         @[conditional] = (path, val) =>
-          if (arguments.length is 1)
+          if arguments.length is 1
             val = path
             path = @_curr_path
-          path_conds = @_conditions[path] or (@_conditions[path] = {})
-          path_conds["$#{conditional}"] = val
+          @_conditions[path] ?= {}
+          @_conditions[path]["$#{conditional}"] = val
           @
 
       # TODO: skip (need support in api)
@@ -64,13 +64,12 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
           path = @_curr_path
         else
           val = true
-      path_conds = @_conditions[path] or (@_conditions[path] = {})
-      path_conds.$exists = val
+      @_conditions[path] ?= {}
+      @_conditions[path].$exists = val
       @
 
     select: (arg) =>
-      if arg
-        console.log 'WARNING: TODO: select fields in the API'
+      console.log 'WARNING: TODO: select fields in the API' if arg
       @
 
     count: () =>
@@ -82,29 +81,26 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         method: 'get'
         uri: "#{@_url}"
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
-        qs: _({ where: @_conditions }).extend @_options
+        qs: _(where: @_conditions ).extend @_options
         json: true
       # convert stringify nested query params
-      for key, val of opts.qs
-        continue if not _(val).isObject()
-        opts.qs[key] = JSON.stringify(val)
+      opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       #console.log opts
-      waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
+      waterfall = [async.apply quest, opts].concat @_post.exec or []
       async.waterfall waterfall, cb
 
     stream: () => new QueryStream @
 
   class Update extends Middlewareable
-    constructor: (@_url, @_values) ->
-      super()
+    constructor: (@_url, @_values) -> super()
     exec: (cb) =>
       opts =
         method: 'put'
-        uri: "#{@_url}"
+        uri: @_url
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
         json: @_values
       #console.log opts
-      waterfall = [ async.apply(quest, opts) ].concat(@_post['exec'] or [])
+      waterfall = [async.apply quest, opts].concat @_post['exec'] or []
       async.waterfall waterfall, cb
 
   # adds query-creating functions to a class: find, findOne, etc.
@@ -124,7 +120,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       else if _(options).isFunction()
         cb = options
         options = {}
-      [ conditions, fields, options, cb ]
+      [conditions, fields, options, cb]
 
     @_uri_to_class: (uri) ->
       klasses = _(clever).filter (val, key) -> val.path? # Filter out properties that aren't resources (e.g. api_path)
@@ -140,7 +136,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         q.paging = body.paging
         if body.data
           results = _(body.data).map (doc) =>
-            Klass = @_uri_to_class(doc.uri)
+            Klass = @_uri_to_class doc.uri
             new Klass doc.data, doc.uri, doc.links
           cb_post null, results
         else if body.count?
@@ -151,8 +147,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       q.exec cb
 
     @findOne: (conditions, fields, options, cb) ->
-      [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
-      _(options).extend { limit: 1 }
+      [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
+      _(options).extend limit: 1
       if not cb
         q = @find conditions, fields, options
         q.post 'exec', (results, cb_post) -> cb_post null, results[0]
@@ -161,25 +157,22 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         @find conditions, fields, options, (err, docs) -> cb err, docs[0]
 
     @findById: (id, fields, options, cb) ->
-      throw Error('must specify an ID for findById') if not id or not _(id).isString()
-      conditions = { id: id }
-      [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
+      throw Error('must specify an ID for findById') unless _(id).isString()
+      conditions = id: id
+      [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
       @findOne conditions, fields, options, cb
 
-    constructor: (@_properties, @_uri, @_links) ->
-      @_unsaved_values = {}
+    constructor: (@_properties, @_uri, @_links) -> @_unsaved_values = {}
 
-    get: (key) =>
-      dotty.get @_properties, key
+    get: (key) => dotty.get @_properties, key
 
-    set: (key, val) =>
-      dotty.put @_unsaved_values, key, val
+    set: (key, val) => dotty.put @_unsaved_values, key, val
 
     save: (cb) =>
-      return cb(null) if not _(@_unsaved_values).keys().length
-      u = new Update "#{@_uri}", @_unsaved_values
+      return cb null if not _(@_unsaved_values).keys().length
+      u = new Update @_uri, @_unsaved_values
       u.post 'exec', (resp, body, cb_post) =>
-        @_properties = if _(body.data).isString()? then JSON.parse(body.data) else body.data # httpbin doesn't return json
+        @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
         cb_post()
       u.exec cb
@@ -199,19 +192,14 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
 
   class District extends Resource
     @path: '/v1.1/districts'
-
   class School extends Resource
     @path: '/v1.1/schools'
-
   class Section extends Resource
     @path: '/v1.1/sections'
-
   class Student extends Resource
     @path: '/v1.1/students'
-
   class Teacher extends Resource
     @path: '/v1.1/teachers'
-
   class Event extends Resource
     @path: '/v1.1/push/events'
 
