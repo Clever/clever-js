@@ -143,7 +143,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
             Klass = @_uri_to_class(doc.uri)
             new Klass doc.data, doc.uri, doc.links
           cb_post null, results
-        else if body.count
+        else if body.count?
           cb_post null, body.count
         else
           throw Error "Could not parse query response: #{body}, #{JSON.stringify q, undefined, 2}"
