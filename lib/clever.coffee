@@ -127,16 +127,9 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       [ conditions, fields, options, cb ]
 
     @_uri_to_class: (uri) ->
-      klasses =
-        'districts'   : District
-        'schools'     : School
-        'students'    : Student
-        'sections'    : Section
-        'teachers'    : Teacher
-        'push/events' : Event
-      match = uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
-      Klass = klasses[match?[1]]
-      throw Error("Could not get type from uri: #{uri}, #{match}") if not Klass
+      klasses = _(clever).filter (val, key) -> val.path? # Filter out properties that aren't resources (e.g. api_path)
+      Klass = _(klasses).find (Klass) -> uri.match new RegExp "^#{Klass.path}"
+      throw Error("Could not get type from uri: #{uri}, #{JSON.stringify klasses, undefined, 2}") if not Klass
       Klass
 
     @find: (conditions, fields, options, cb) ->
