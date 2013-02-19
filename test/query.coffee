@@ -73,6 +73,13 @@ describe 'query', ->
       assert.equal district.get('name'), 'Demo District'
       done()
 
+  it 'findById with exec', (done) ->
+    @clever.District.findById("4fd43cc56d11340000000005").exec (err, district) =>
+      assert not _(district).isArray()
+      assert (district instanceof @clever.District), "Incorrect type on district object"
+      assert.equal district.get('name'), 'Demo District'
+      done()
+
   it 'find with a where condition', (done) ->
     @clever.School.find().where('name').equals('Clever Academy').exec (err, schools) =>
       assert.equal schools.length, 1
