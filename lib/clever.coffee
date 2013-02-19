@@ -60,8 +60,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         val = true
       else if arguments.length is 1
         if _(path).isBoolean()
+          val = path
           path = @_curr_path
-          val = true
         else
           val = true
       path_conds = @_conditions[path] or (@_conditions[path] = {})
