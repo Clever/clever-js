@@ -9,7 +9,7 @@ describe 'create', ->
 
   before () -> @clever = Clever 'FAKE_KEY', 'http://fake_api.com'
 
-  it.only 'submits post requests', (done) ->
+  it 'submits post requests', (done) ->
     @timeout 30000
     scope = nock('http://fake_api.com')
       .post('/v1.1/districts', {name: 'Test', location: address: 'Tacos'})
@@ -31,4 +31,5 @@ describe 'create', ->
       assert.equal district.get('name'), 'Test'
       assert.equal district.get('location.address'), 'Tacos'
       assert.equal district._uri, '/v1.1/districts/1235'
+      scope.done()
       done()
