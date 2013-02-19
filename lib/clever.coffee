@@ -172,23 +172,21 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     set: (key, val) => dotty.put @_unsaved_values, key, val
 
     save: (cb) =>
-      creating = false
-      if not @_properties.id?
-        creating = true
-        w = new Create "#{clever.url_base}#{@constructor.path}", @_properties
-      else
+      update = @_properties.id?
+      if update
         return cb null if not _(@_unsaved_values).keys().length
         w = new Update @_uri, @_unsaved_values
+      else
+        w = new Create "#{clever.url_base}#{@constructor.path}", @_properties
+        w.post 'exec', (resp, body, cb_post) =>
+          self_link = _(body.links).find (link) -> link.rel is 'self'
+          return cb_post Error 'no self link' if not self_link?
+          @_uri = self_link.uri
+          cb_post null, resp, body
       w.post 'exec', (resp, body, cb_post) =>
         @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
         cb_post null, resp, body
-      if creating
-        w.post 'exec', (resp, body, cb_post) =>
-          self_link = _(body.links).find (link) -> link.rel is 'self'
-          return if not self_link
-          @_uri = self_link.uri
-          cb_post null, resp, body
       w.exec cb
 
     to_json: () => _(@_properties).clone()
