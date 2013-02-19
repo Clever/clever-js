@@ -8,6 +8,9 @@ describe 'query', ->
 
   before -> @clever = Clever 'DEMO_KEY'
 
+  it 'throws an error if you try to instantiate without an api key', ->
+    assert.throws -> Clever()
+
   it 'find with no arguments', (done) ->
     @clever.District.find (err, districts) =>
       _(districts).each (district) =>
@@ -80,6 +83,11 @@ describe 'query', ->
 
   it 'exists true works', (done) ->
     @clever.School.find().exists('name', true).count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists path works', (done) ->
+    @clever.School.find().exists('name').count().exec (err, count) ->
       assert.equal count, 4
       done()
 
