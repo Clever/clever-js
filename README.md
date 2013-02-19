@@ -29,8 +29,6 @@ The `clever` package exposes objects corresponding to resources:
 Each exposes a query API that closely resembles that of [Mongoose](http://mongoosejs.com/docs/queries.html). The available methods are `find`, `findOne`, and `findById`:
 
 ```javascript
-clever.api_key = 'DEMO_KEY';
-
 clever.District.find({}, function(error, districts) {
   assert(Array.isArray(districts));
   assert(districts[0] instanceof clever.District);
