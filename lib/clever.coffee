@@ -90,16 +90,21 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
 
     stream: () => new QueryStream @
 
-  class Update extends Middlewareable
-    constructor: (@_url, @_values) -> super()
+  class Writeback extends Middlewareable
+    _method: null
+    constructor: (@_uri, @_values) -> super()
     exec: (cb) =>
       opts =
-        method: 'put'
-        uri: @_url
+        method: @_method
+        uri: @_uri
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
         json: @_values
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
+  class Update extends Writeback
+    _method: 'put'
+  class Create extends Writeback
+    _method: 'post'
 
   # adds query-creating functions to a class: find, findOne, etc.
   class Resource
@@ -167,13 +172,24 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     set: (key, val) => dotty.put @_unsaved_values, key, val
 
     save: (cb) =>
-      return cb null if not _(@_unsaved_values).keys().length
-      u = new Update @_uri, @_unsaved_values
-      u.post 'exec', (resp, body, cb_post) =>
+      creating = false
+      if not @_properties.id?
+        creating = true
+        w = new Create "#{clever.url_base}#{@constructor.path}", @_properties
+      else
+        return cb null if not _(@_unsaved_values).keys().length
+        w = new Update @_uri, @_unsaved_values
+      w.post 'exec', (resp, body, cb_post) =>
         @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
-        cb_post()
-      u.exec cb
+        cb_post null, resp, body
+      if creating
+        w.post 'exec', (resp, body, cb_post) =>
+          self_link = _(body.links).find (link) -> link.rel is 'self'
+          return if not self_link
+          @_uri = self_link.uri
+          cb_post null, resp, body
+      w.exec cb
 
     to_json: () => _(@_properties).clone()
 
