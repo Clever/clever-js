@@ -97,3 +97,33 @@ describe 'query', ->
       assert.equal resource.get('some_key'), 'some_val'
       scope.done()
       done err
+
+  it 'exists true with where works', (done) ->
+    @clever.School.find().where('name').exists(true).count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists without args works', (done) ->
+    @clever.School.find().where('name').exists().count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists true works', (done) ->
+    @clever.School.find().exists('name', true).count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists path works', (done) ->
+    @clever.School.find().exists('name').count().exec (err, count) ->
+      assert.equal count, 4
+      done()
+
+  it 'exists false with where works', (done) ->
+    @clever.School.find().where('name').exists(false).count().exec (err, count) ->
+      assert.equal count, 0
+      done()
+
+  it 'exists false works', (done) ->
+    @clever.School.find().exists('name', false).count().exec (err, count) ->
+      assert.equal count, 0
+      done()
