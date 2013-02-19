@@ -60,8 +60,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         val = true
       else if arguments.length is 1
         if _(path).isBoolean()
+          val = path
           path = @_curr_path
-          val = true
         else
           val = true
       path_conds = @_conditions[path] or (@_conditions[path] = {})
@@ -111,7 +111,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
   class Resource
     @path: null
 
-    @_process_args: (conditions, fields, options, cb) ->
+    @_process_args: (conditions, fields, options={}, cb) ->
       if _(conditions).isFunction()
         cb = conditions
         conditions = {}
@@ -127,16 +127,9 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       [ conditions, fields, options, cb ]
 
     @_uri_to_class: (uri) ->
-      klasses =
-        'districts'   : District
-        'schools'     : School
-        'students'    : Student
-        'sections'    : Section
-        'teachers'    : Teacher
-        'push/events' : Event
-      match = uri.match /^\/v1.1\/([a-z_]+)\/[0-9a-f]+$/
-      Klass = klasses[match?[1]]
-      throw Error("Could not get type from uri: #{uri}, #{match}") if not Klass
+      klasses = _(clever).filter (val, key) -> val.path? # Filter out properties that aren't resources (e.g. api_path)
+      Klass = _(klasses).find (Klass) -> uri.match new RegExp "^#{Klass.path}"
+      throw Error("Could not get type from uri: #{uri}, #{JSON.stringify klasses, undefined, 2}") if not Klass
       Klass
 
     @find: (conditions, fields, options, cb) ->
@@ -150,7 +143,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
             Klass = @_uri_to_class(doc.uri)
             new Klass doc.data, doc.uri, doc.links
           cb_post null, results
-        else if body.count
+        else if body.count?
           cb_post null, body.count
         else
           throw Error "Could not parse query response: #{body}, #{JSON.stringify q, undefined, 2}"
@@ -160,8 +153,12 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     @findOne: (conditions, fields, options, cb) ->
       [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
       _(options).extend { limit: 1 }
-      @find conditions, fields, options, (err, docs) ->
-        cb err, docs[0]
+      if not cb
+        q = @find conditions, fields, options
+        q.post 'exec', (results, cb_post) -> cb_post null, results[0]
+        q
+      else
+        @find conditions, fields, options, (err, docs) -> cb err, docs[0]
 
     @findById: (id, fields, options, cb) ->
       throw Error('must specify an ID for findById') if not id or not _(id).isString()
