@@ -160,8 +160,12 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     @findOne: (conditions, fields, options, cb) ->
       [ conditions, fields, options, cb ] = @_process_args conditions, fields, options, cb
       _(options).extend { limit: 1 }
-      @find conditions, fields, options, (err, docs) ->
-        cb err, docs[0]
+      if not cb
+        q = @find conditions, fields, options
+        q.post 'exec', (results, cb_post) -> cb_post null, results[0]
+        q
+      else
+        @find conditions, fields, options, (err, docs) -> cb err, docs[0]
 
     @findById: (id, fields, options, cb) ->
       throw Error('must specify an ID for findById') if not id or not _(id).isString()
