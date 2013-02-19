@@ -111,7 +111,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
   class Resource
     @path: null
 
-    @_process_args: (conditions, fields, options, cb) ->
+    @_process_args: (conditions, fields, options={}, cb) ->
       if _(conditions).isFunction()
         cb = conditions
         conditions = {}
