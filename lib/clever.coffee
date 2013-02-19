@@ -44,13 +44,13 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
           @
 
     where: (path, val) =>
-      throw Error('path in where must be a string') if not _(path).isString()
+      throw Error 'path in where must be a string' if not _(path).isString()
       @_curr_path = path
       @_conditions[path] = val if arguments.length is 2
       @
 
     equals: (val) =>
-      throw Error('must use equals() after where()') if not @_curr_path
+      throw Error 'must use equals() after where()' if not @_curr_path
       @_conditions[@_curr_path] = val
       @
 
@@ -125,7 +125,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     @_uri_to_class: (uri) ->
       klasses = _(clever).filter (val, key) -> val.path? # Filter out properties that aren't resources (e.g. api_path)
       Klass = _(klasses).find (Klass) -> uri.match new RegExp "^#{Klass.path}"
-      throw Error("Could not get type from uri: #{uri}, #{JSON.stringify klasses, undefined, 2}") if not Klass
+      throw Error "Could not get type from uri: #{uri}, #{JSON.stringify klasses, undefined, 2}" if not Klass
       Klass
 
     @find: (conditions, fields, options, cb) ->
@@ -157,7 +157,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         @find conditions, fields, options, (err, docs) -> cb err, docs[0]
 
     @findById: (id, fields, options, cb) ->
-      throw Error('must specify an ID for findById') unless _(id).isString()
+      throw Error 'must specify an ID for findById' unless _(id).isString()
       conditions = id: id
       [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
       @findOne conditions, fields, options, cb
