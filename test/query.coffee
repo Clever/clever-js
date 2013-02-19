@@ -3,6 +3,7 @@ fs        = require 'fs'
 assert    = require 'assert'
 _         = require 'underscore'
 Clever    = require "#{__dirname}/../index"
+nock      = require 'nock'
 
 describe 'query', ->
 
@@ -81,3 +82,18 @@ describe 'query', ->
     @clever.School.find().where('name').equals('Clever Academy').count().exec (err, count) ->
       assert.equal count, 1
       done()
+
+  it 'supports custom resources', (done) ->
+    clever = Clever "FAKE_KEY", "http://fake_api.com"
+    class clever.NewResource extends clever.Resource
+      @path: '/resource/path'
+    scope = nock("http://fake_api.com")
+      .get('/resource/path?where=%7B%7D')
+      .reply(200, {data: [{uri: '/resource/path/some_id', data: {some_key: 'some_val'}}]})
+    clever.NewResource.find (err, resources) ->
+      assert.equal resources.length, 1
+      resource = resources[0]
+      assert resource instanceof clever.NewResource
+      assert.equal resource.get('some_key'), 'some_val'
+      scope.done()
+      done err
