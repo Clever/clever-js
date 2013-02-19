@@ -9,6 +9,9 @@ describe 'query', ->
 
   before -> @clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
 
+  it 'throws an error if you try to instantiate without an api key', ->
+    assert.throws -> Clever()
+
   it 'find with no arguments', (done) ->
     @clever.District.find (err, districts) =>
       _(districts).each (district) =>
