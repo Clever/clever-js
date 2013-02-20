@@ -18,7 +18,7 @@ describe 'create', ->
         {
           data:
             name: 'Test'
-            location: address: 'Tacos'
+            location: address: 'Tacos' # Casa Bonita
           links: [{rel: 'self', uri: '/v1.1/districts/1235'}]
         }
       )
