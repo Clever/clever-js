@@ -137,3 +137,42 @@ describe 'query', ->
     @clever.School.find().exists('name', false).count().exec (err, count) ->
       assert.equal count, 0
       done()
+
+  it 'successfully handles invalid get requests that return a json', (done) ->
+    @timeout 30000
+    clever = Clever 'FAKE_KEY', 'http://fake_api.com'
+    scope = nock('http://fake_api.com')
+      .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+      .reply(401, {error: 'unauthorized'})
+    clever.District.findById '12345', (err, district) ->
+      assert not district
+      assert.equal err.message, "received statusCode 401 instead of 200"
+      assert.deepEqual err.body, {error: 'unauthorized'}
+      scope.done()
+      done()
+
+  it 'successfully handles invalid get requests that return a json with exec', (done) ->
+    @timeout 30000
+    clever = Clever 'FAKE_KEY', 'http://fake_api.com'
+    scope = nock('http://fake_api.com')
+      .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+      .reply(401, {error: 'unauthorized'})
+    clever.District.findById('12345').exec (err, district) ->
+      assert not district
+      assert.equal err.message, "received statusCode 401 instead of 200"
+      assert.deepEqual err.body, {error: 'unauthorized'}
+      scope.done()
+      done()
+
+  it 'successfully handles invalid get requests that return a string', (done) ->
+    @timeout 30000
+    clever = Clever 'FAKE_KEY', 'http://fake_api.com'
+    scope = nock('http://fake_api.com')
+      .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+      .reply(401, 'unauthorized')
+    clever.District.findById '12345', (err, district) ->
+      assert not district
+      assert.equal err.message, "received statusCode 401 instead of 200"
+      assert.equal err.body, 'unauthorized'
+      scope.done()
+      done()
