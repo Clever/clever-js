@@ -6,6 +6,12 @@ dotty       = require 'dotty'
 QueryStream = require "#{__dirname}/querystream"
 _(_.str.exports()).mixin()
 
+handle_errors = (resp, body, cb) ->
+  return cb null, resp, body if resp.statusCode is 200
+  err = new Error "received statusCode #{resp.statusCode} instead of 200"
+  err.body = body
+  cb err
+
 module.exports = (api_key, url_base='https://api.getclever.com') ->
   throw new Error 'Must provide api_key' if not api_key
   clever =
@@ -25,6 +31,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
   class Query extends Middlewareable
     constructor: (@_url, @_conditions={}, @_options={}) ->
       super()
+      @post 'exec', handle_errors
       @_curr_path = null
 
       # TODO: all
@@ -92,7 +99,9 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
 
   class Writeback extends Middlewareable
     _method: null
-    constructor: (@_uri, @_values) -> super()
+    constructor: (@_uri, @_values) ->
+      super()
+      @post 'exec', handle_errors
     exec: (cb) =>
       opts =
         method: @_method
@@ -157,7 +166,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         q.post 'exec', (results, cb_post) -> cb_post null, results[0]
         q
       else
-        @find conditions, fields, options, (err, docs) -> cb err, docs[0]
+        @find conditions, fields, options, (err, docs) -> cb err, docs?[0]
 
     @findById: (id, fields, options, cb) ->
       throw Error 'must specify an ID for findById' unless _(id).isString()
