@@ -184,7 +184,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       update = @_properties.id?
       if update
         return cb null if not _(@_unsaved_values).keys().length
-        w = new Update @_uri, @_unsaved_values
+        w = new Update "#{clever.url_base}#{@_uri}", @_unsaved_values
       else
         w = new Create "#{clever.url_base}#{@constructor.path}", @_properties
         w.post 'exec', (resp, body, cb_post) =>

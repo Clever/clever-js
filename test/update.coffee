@@ -11,7 +11,7 @@ describe 'update', ->
 
   it 'submits put requests', (done) ->
     @timeout 30000
-    district = new @clever.District { name: 'Test', id: '1212121' }, 'http://httpbin.org/put'
+    district = new @clever.District { name: 'Test', id: '1212121' }, '/put'
     district.set 'location.address', 'Tacos'
     district.save (err) ->
       assert.ifError err
@@ -30,7 +30,7 @@ describe 'update', ->
       location:
         address: 'Tacos'
       id: '12121'
-    , "http://fake_api.com/v1.1/districts/12121"
+    , "/v1.1/districts/12121"
     district.set 'some_prop', 'some_val'
     district.save (err) ->
       assert.equal err?.message, "received statusCode 401 instead of 200"
@@ -49,7 +49,7 @@ describe 'update', ->
       location:
         address: 'Tacos'
       id: '12121'
-    , "http://fake_api.com/v1.1/districts/12121"
+    , "/v1.1/districts/12121"
     district.set 'some_prop', 'some_val'
     district.save (err) ->
       assert.equal err?.message, "received statusCode 401 instead of 200"
