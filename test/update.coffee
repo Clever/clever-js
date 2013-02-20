@@ -10,7 +10,7 @@ describe 'update', ->
 
   it 'submits put requests', (done) ->
     @timeout 30000
-    district = new @clever.District { name: 'Test' }, 'http://httpbin.org/put'
+    district = new @clever.District { name: 'Test', id: '1212121' }, 'http://httpbin.org/put'
     district.set 'location.address', 'Tacos'
     district.save (err) ->
       assert.ifError err
