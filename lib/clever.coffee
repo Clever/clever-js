@@ -204,7 +204,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: 'put'
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        auth: clever.api_key
+        headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
         json: obj
       if _(obj).isFunction()
         cb = obj
