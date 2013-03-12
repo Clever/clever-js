@@ -16,7 +16,7 @@ describe 'querystream', ->
     stream.on 'data', (section) =>
       cnt += 1
       assert (section instanceof @clever.Section), "Incorrect type on section object"
-    stream.on 'error', (err) -> assert false, "There shouldn't be an error"
+    stream.on 'error', (err) -> assert false, "There shouldn't be an error: #{err}"
     stream.on 'end', (err) ->
       assert.equal query.paging.count, cnt
       done()

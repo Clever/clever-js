@@ -1,6 +1,6 @@
 {
   "name": "clever",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Node.js library for interacting with the Clever API",
   "author": "Clever <support@getclever.com>",
   "keywords": [
@@ -16,7 +16,8 @@
     "coffee-script": "~1.4.0",
     "underscore.string": "~2.3.1",
     "dotty": "0.0.1",
-    "quest": "~0.1.9"
+    "quest": "~0.1.9",
+    "readable-stream": "~1.0.2"
   },
   "devDependencies": {
     "nock": "~0.15.2",
