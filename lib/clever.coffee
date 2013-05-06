@@ -114,6 +114,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     _method: 'put'
   class Create extends Writeback
     _method: 'post'
+  class Remove extends Writeback
+    _method: 'delete'
 
   # adds query-creating functions to a class: find, findOne, etc.
   class Resource
@@ -198,7 +200,11 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         cb_post null, resp, body
       w.exec cb
 
-    to_json: () => _(@_properties).clone()
+    remove: (cb) => (new Remove "#{clever.url_base}#{@_uri}").exec cb
+
+    to_json: => _(@_properties).clone()
+
+    toJSON: @to_json
 
     properties: (obj, cb) =>
       opts =
