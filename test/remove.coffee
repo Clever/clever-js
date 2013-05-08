@@ -10,4 +10,5 @@ describe 'update', ->
     district = new @clever.District { name: 'Test', id: '1212121' }, '/delete'
     district.remove (err) ->
       assert.ifError err
+      assert.equal arguments.length, 1
       done()

@@ -201,7 +201,10 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         cb_post null, resp, body
       w.exec cb
 
-    remove: (cb) => (new Remove "#{clever.url_base}#{@_uri}").exec cb
+    remove: (cb) =>
+      r = new Remove "#{clever.url_base}#{@_uri}"
+      r.post 'exec', (resp, body, cb_post) -> cb_post null # No error
+      r.exec cb
 
     to_json: => _(@_properties).clone()
 
