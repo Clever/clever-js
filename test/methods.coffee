@@ -6,7 +6,7 @@ Clever    = require "#{__dirname}/../index"
 nock      = require 'nock'
 util      = require 'util'
 
-describe.only 'methods', ->
+describe 'methods', ->
   before () -> @clever = Clever 'DEMO_KEY', 'http://httpbin.org'
   it 'allows calling to_json', ->
     district = new @clever.District { name: 'Test', id: '1212121' }, '/put'

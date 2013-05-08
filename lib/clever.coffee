@@ -10,6 +10,7 @@ handle_errors = (resp, body, cb) ->
   return cb null, resp, body if resp.statusCode is 200
   err = new Error "received statusCode #{resp.statusCode} instead of 200"
   err.body = body
+  err.resp = resp
   cb err
 
 module.exports = (api_key, url_base='https://api.getclever.com') ->
