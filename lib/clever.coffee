@@ -204,7 +204,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
 
     to_json: => _(@_properties).clone()
 
-    toJSON: @to_json
+    toJSON: => @to_json()
 
     properties: (obj, cb) =>
       opts =
