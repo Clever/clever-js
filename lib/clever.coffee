@@ -198,7 +198,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       w.post 'exec', (resp, body, cb_post) =>
         @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
-        cb_post null, resp, body
+        cb_post null # No error if we got this far
       w.exec cb
 
     remove: (cb) =>
