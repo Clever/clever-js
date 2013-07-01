@@ -77,7 +77,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       @
 
     select: (arg) =>
-      console.log 'WARNING: TODO: select fields in the API' if arg
+      console.warn 'WARNING: TODO: select fields in the API' if arg
       @
 
     count: () =>
@@ -109,7 +109,9 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
         uri: @_uri
         headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
         json: @_values
-      waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
+      waterfall = [async.apply(quest, opts)]
+      if @_post['exec']
+        waterfall = waterfall.concat(@_post['exec'])
       async.waterfall waterfall, cb
   class Update extends Writeback
     _method: 'put'
