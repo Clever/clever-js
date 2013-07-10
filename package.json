@@ -17,7 +17,9 @@
     "underscore.string": "~2.3.1",
     "dotty": "0.0.1",
     "quest": "~0.1.9",
-    "readable-stream": "~1.0.2"
+    "readable-stream": "~1.0.2",
+    "understream": "~0.4.4",
+    "sinon": "~1.7.3"
   },
   "devDependencies": {
     "nock": "~0.15.2",
