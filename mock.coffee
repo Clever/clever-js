@@ -25,6 +25,7 @@ module.exports = (api_key, data_dir) ->
     studentproperties: trequire("#{data_dir}/studentproperties")
     teachers: trequire("#{data_dir}/teachers")
     teacherproperties: trequire("#{data_dir}/teacherproperties")
+  console.log "loaded #{clever.db[key].length} #{key}" for key, val of clever.db
 
   sandbox = sinon.sandbox.create()
 
@@ -43,6 +44,11 @@ module.exports = (api_key, data_dir) ->
     return s.stream()
 
   sandbox.stub clever.Resource.prototype, 'properties', (obj, cb) ->
+    if arguments.length is 1
+      cb = obj
+      obj = undefined
+    else if arguments.length isnt 2
+      throw new Error("expected 1 or 2 arguments to properties")
     resource = @constructor.name.toLowerCase() + 's'
     resource_singular = _(resource).rtrim('s')
     id = @_properties.id
@@ -51,9 +57,7 @@ module.exports = (api_key, data_dir) ->
     if not prop_obj
       prop_obj = _.object [[resource_singular, id], ['data', {}]]
       clever.db["#{resource_singular}properties"].push prop_obj
-    if _(obj).isFunction()
-      cb = obj
-    else
+    if obj
       dotty.put prop_obj.data, k, v for k, v of obj
     return cb null, prop_obj.data
 
