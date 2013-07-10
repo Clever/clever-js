@@ -19,6 +19,8 @@ module.exports = (api_key, data_dir) ->
     return val or []
 
   clever.db =
+    districts: trequire("#{data_dir}/districts")
+    districtproperties: trequire("#{data_dir}/districtproperties")
     students: trequire("#{data_dir}/students")
     studentproperties: trequire("#{data_dir}/studentproperties")
     teachers: trequire("#{data_dir}/teachers")
