@@ -2,7 +2,7 @@ sinon    = require 'sinon'
 Readable = require 'readable-stream'
 _        = require 'underscore'
 dotty    = require 'dotty'
-
+fs       = require 'fs'
 _.mixin require('underscore.string').exports()
 _.mixin require('understream').exports()
 
