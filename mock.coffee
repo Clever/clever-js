@@ -14,8 +14,11 @@ module.exports = (api_key, data_dir) ->
 
   trequire = (fp) ->
     val = null
-    try
-      val = require(fp)
+    if fs.existsSync("#{fp}.coffee") or fs.existsSync("#{fp}.js") or fs.existsSync("#{fp}.json")
+      try
+        val = require(fp)
+      catch err
+        throw "Error loading file at #{fp}: #{err}"
     return val or []
 
   clever.db =
