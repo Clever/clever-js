@@ -1,6 +1,6 @@
 {
   "name": "clever",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Node.js library for interacting with the Clever API",
   "author": "Clever <support@getclever.com>",
   "keywords": [

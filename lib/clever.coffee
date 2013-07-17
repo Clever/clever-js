@@ -243,3 +243,5 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
     Teacher  : Teacher
     Event    : Event
     Query    : Query
+
+module.exports.handle_errors = handle_errors
