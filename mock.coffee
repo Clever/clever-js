@@ -36,9 +36,18 @@ module.exports = (api_key, data_dir) ->
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@._url, '/')
-    cb null, _(clever.db[resource]).map (raw_json) ->
-      Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
-      new Klass raw_json
+    conditions = @._conditions
+    cb null, _(clever.db[resource]).chain()
+      .filter((obj) ->
+        for key, val of conditions
+          return false unless obj[key] is val
+        return true
+      )
+      .map((raw_json) ->
+        Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
+        return new Klass raw_json
+      )
+      .value()
 
   sandbox.stub clever.Query.prototype, 'stream', () ->
     resource = _.strRightBack(@_url, '/')
