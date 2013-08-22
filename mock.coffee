@@ -6,6 +6,9 @@ fs       = require 'fs'
 _.mixin require('underscore.string').exports()
 _.mixin require('understream').exports()
 
+apply_shadow_props = (obj) ->
+  if obj._shadow? then  _.extend(obj, obj._shadow) else obj
+
 module.exports = (api_key, data_dir) ->
   throw new Error "Must provide api_key" unless api_key?
   throw new Error "Must provide data_dir" unless data_dir?
@@ -43,6 +46,7 @@ module.exports = (api_key, data_dir) ->
           return false unless obj[key] is val
         return true
       )
+      .map(apply_shadow_props)
       .map((raw_json) ->
         Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
         return new Klass raw_json
@@ -51,9 +55,11 @@ module.exports = (api_key, data_dir) ->
 
   sandbox.stub clever.Query.prototype, 'stream', () ->
     resource = _.strRightBack(@_url, '/')
-    s = _(clever.db[resource]).stream().map (raw_json) ->
-      Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
-      return new Klass raw_json
+    s = _(clever.db[resource]).stream()
+      .map(apply_shadow_props)
+      .map (raw_json) ->
+        Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
+        return new Klass raw_json
     process.nextTick () -> s.run((err) ->)
     return s.stream()
 
