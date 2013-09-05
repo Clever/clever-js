@@ -72,13 +72,17 @@ module.exports = (api_key, data_dir) ->
     resource = @constructor.name.toLowerCase() + 's'
     resource_singular = _(resource).rtrim('s')
     id = @_properties.id
-    return cb(new Error("404")) unless _(clever.db[resource]).findWhere({id:id})
+    clever_resource = _(clever.db[resource]).findWhere({id:id})
+    return cb(new Error("404")) unless clever_resource?
     prop_obj = _(clever.db["#{resource_singular}properties"]).findWhere(_.object [[resource_singular, id]])
     if not prop_obj
       prop_obj = _.object [[resource_singular, id], ['data', {}]]
       clever.db["#{resource_singular}properties"].push prop_obj
     if obj
       dotty.put prop_obj.data, k, v for k, v of obj
+      if obj.google_apps?.username?
+        clever_resource._shadow ?= {}
+        clever_resource._shadow.email = obj.google_apps.username
     return cb null, prop_obj.data
 
   clever
