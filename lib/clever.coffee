@@ -88,7 +88,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: 'get'
         uri: @_url
-        headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
+        auth: "#{clever.api_key}:"
         qs: _({where: @_conditions}).extend @_options
         json: true
       # convert stringify nested query params
@@ -107,7 +107,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: @_method
         uri: @_uri
-        headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
+        auth: "#{clever.api_key}:"
         json: @_values
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
@@ -214,7 +214,7 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: 'put'
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        headers: { Authorization: "Basic #{new Buffer(clever.api_key).toString('base64')}" }
+        auth: "#{clever.api_key}:"
         json: obj
       if _(obj).isFunction()
         cb = obj
