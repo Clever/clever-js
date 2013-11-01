@@ -16,7 +16,7 @@
     "coffee-script": "~1.4.0",
     "underscore.string": "~2.3.1",
     "dotty": "0.0.1",
-    "quest": "~0.1.9",
+    "quest": "~0.2.4",
     "readable-stream": "~1.0.2"
   },
   "devDependencies": {
