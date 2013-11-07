@@ -38,8 +38,8 @@ module.exports = (api_key, data_dir) ->
   sandbox = sinon.sandbox.create()
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
-    resource = _.strRightBack(@._url, '/')
-    conditions = @._conditions
+    resource = _.strRightBack(@_url, '/')
+    conditions = @_conditions
     cb null, _(clever.db[resource]).chain()
       .filter((obj) ->
         for key, val of conditions
