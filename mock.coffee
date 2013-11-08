@@ -35,12 +35,12 @@ module.exports = (api_key, data_dir) ->
   sandbox = sinon.sandbox.create()
 
   apply_query = (undersomething, conditions, resource) ->
-    return undersomething.filter((obj) ->
+    return undersomething.filter (obj) ->
       for key, val of conditions
         return false unless obj[key] is val
-      return true)
-    .map((obj) ->
-      if obj._shadow? then  _.extend(obj, obj._shadow) else obj)
+      return true
+    .map (obj) ->
+      if obj._shadow? then  _.extend(obj, obj._shadow) else obj
     .map (raw_json) ->
       Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
       return new Klass raw_json
