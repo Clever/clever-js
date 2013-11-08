@@ -8,10 +8,10 @@ describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
     @clever = require("#{__dirname}/../mock") 'api key', "#{__dirname}/mock_data"
 
   it "supports streaming GETs", (done) ->
-    _(@clever.Student.find().stream()).stream().invoke('toJSON').value (data) ->
+    _(@clever.Student.find().stream()).stream().invoke('toJSON').run (err, data) ->
+      assert.ifError err
       assert.deepEqual data, require("#{__dirname}/mock_data/students")
       done()
-    .run assert.ifError
 
   it "supports non-streaming GETs", (done) ->
     @clever.Student.find().exec (err, data) ->
