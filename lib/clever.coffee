@@ -13,10 +13,18 @@ handle_errors = (resp, body, cb) ->
   err.resp = resp
   cb err
 
-module.exports = (api_key, url_base='https://api.getclever.com') ->
-  throw new Error 'Must provide api_key' if not api_key
+apply_auth = (auth, http_opts) ->
+  if auth.api_key?
+    _(http_opts).extend auth: "#{auth.api_key}:"
+  else if auth.token?
+    http_opts.headers ?= {}
+    _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
+
+module.exports = (auth, url_base='https://api.getclever.com') ->
+  throw new Error 'Must provide auth' if not auth
+  auth = {api_key: auth} if _.isString auth
   clever =
-    api_key: api_key
+    auth: auth
     url_base: url_base
 
   # adds pre/post function queues to an object
@@ -88,9 +96,9 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: 'get'
         uri: @_url
-        auth: "#{clever.api_key}:"
         qs: _({where: @_conditions}).extend @_options
         json: true
+      apply_auth clever.auth, opts
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       waterfall = [async.apply quest, opts].concat(@_post.exec or [])
@@ -107,8 +115,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: @_method
         uri: @_uri
-        auth: "#{clever.api_key}:"
         json: @_values
+      apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
   class Update extends Writeback
@@ -214,8 +222,8 @@ module.exports = (api_key, url_base='https://api.getclever.com') ->
       opts =
         method: 'put'
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        auth: "#{clever.api_key}:"
         json: obj
+      apply_auth clever.auth, opts
       if _(obj).isFunction()
         cb = obj
         _(opts).extend { method: 'get', json: true }
