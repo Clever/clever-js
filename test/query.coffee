@@ -5,7 +5,11 @@ _         = require 'underscore'
 Clever    = require "#{__dirname}/../index"
 nock      = require 'nock'
 
-for auth in [{api_key: 'DEMO_KEY'}, {token: '7f76343d50b9e956138169e8cbb4630bb887b18'}]
+_([
+  'DEMO_KEY'
+  {api_key: 'DEMO_KEY'}
+  {token: '7f76343d50b9e956138169e8cbb4630bb887b18'}
+]).each (auth) ->
   describe "query #{JSON.stringify auth}", ->
 
     before -> @clever = Clever auth, 'https://api.getclever.com'
