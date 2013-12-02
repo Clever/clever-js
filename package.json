@@ -21,10 +21,12 @@
   },
   "devDependencies": {
     "nock": "~0.15.2",
-    "mocha": "~1.7.4"
+    "mocha": "~1.7.4",
+    "sinon": "~1.7.3",
+    "understream": "~0.8.0"
   },
   "engines": {
-    "node": ">=0.8.x",
+    "node": ">=0.10.x",
     "npm": ">=1.1.5"
   },
   "scripts": {
