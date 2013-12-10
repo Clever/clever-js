@@ -18,7 +18,7 @@ module.exports = (api_key, data_dir) ->
       try
         val = require(fp)
       catch err
-        throw "Error loading file at #{fp}: #{err}"
+        throw new Error "Error loading file at #{fp}: #{err}"
     return val or []
 
   clever.db =
@@ -50,7 +50,7 @@ module.exports = (api_key, data_dir) ->
     s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
     cb null, s.value()
 
-  sandbox.stub clever.Query.prototype, 'stream', () ->
+  sandbox.stub clever.Query.prototype, 'stream', ->
     resource = _.strRightBack(@_url, '/')
     s = apply_query _(clever.db[resource]).stream(), @_conditions, resource
     return s.stream()
@@ -66,7 +66,8 @@ module.exports = (api_key, data_dir) ->
     id = @_properties.id
     clever_resource = _(clever.db[resource]).findWhere({id:id})
     return cb(new Error("404")) unless clever_resource?
-    prop_obj = _(clever.db["#{resource_singular}properties"]).findWhere(_.object [[resource_singular, id]])
+    prop_obj = _(clever.db["#{resource_singular}properties"])
+      .findWhere(_.object [[resource_singular, id]])
     if not prop_obj
       prop_obj = _.object [[resource_singular, id], ['data', {}]]
       clever.db["#{resource_singular}properties"].push prop_obj
