@@ -60,7 +60,7 @@ Query objects also support a [stream](http://nodejs.org/api/stream.html) interfa
 ```javascript
 // pull sections 10 at a time
 var count = 0;
-var stream = clever.Sections.find().limit(10).stream();
+var stream = clever.Section.find().limit(10).stream();
 stream.on('data', function(section) {
   count += 1;
   assert(section instanceof clever.Section);
