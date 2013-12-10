@@ -47,12 +47,12 @@ module.exports = (api_key, data_dir) ->
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).chain(), @conditions, resource
+    s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
     cb null, s.value()
 
   sandbox.stub clever.Query.prototype, 'stream', () ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).stream(), @conditions, resource
+    s = apply_query _(clever.db[resource]).stream(), @_conditions, resource
     return s.stream()
 
   sandbox.stub clever.Resource.prototype, 'properties', (obj, cb) ->
