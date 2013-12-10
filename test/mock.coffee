@@ -37,3 +37,10 @@ describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
           students[1].properties (err, data) =>
             assert.deepEqual data, {foo: 'baz'}
             done()
+
+  _.each ['51a5a56f4867bbdf51054055', '51a5a56f4867bbdf51054054'], (id) ->
+    it "supports findById(#{id})", (done) ->
+      @clever.Student.findById id, (err, student) ->
+        assert.ifError err
+        assert.equal student.get('id'), id
+        done()
