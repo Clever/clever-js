@@ -3,6 +3,7 @@
   "version": "0.2.2",
   "description": "Node.js library for interacting with the Clever API",
   "author": "Clever <support@getclever.com>",
+  "repository": "https://github.com/Clever/clever-js",
   "keywords": [
     "clever",
     "api",
