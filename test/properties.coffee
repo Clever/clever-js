@@ -22,7 +22,7 @@ describe 'get/set properties', ->
       ).get('/v1.1/districts/4fd43cc56d11340000000005/properties').reply(200,
         data:
           some: { really: { nested: 'property' } }
-      ).put('/v1.1/districts/4fd43cc56d11340000000005/properties', { test: 'data' }).reply(200,
+      ).patch('/v1.1/districts/4fd43cc56d11340000000005/properties', { test: 'data' }).reply(200,
         data:
           some: { really: { nested: 'property' } }
           test: 'data'

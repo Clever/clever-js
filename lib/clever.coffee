@@ -220,7 +220,7 @@ module.exports = (auth, url_base='https://api.getclever.com') ->
 
     properties: (obj, cb) =>
       opts =
-        method: 'put'
+        method: 'patch'
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
         json: obj
       apply_auth clever.auth, opts
