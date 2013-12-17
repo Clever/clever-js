@@ -120,7 +120,7 @@ module.exports = (auth, url_base='https://api.getclever.com') ->
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
   class Update extends Writeback
-    _method: 'put'
+    _method: 'patch'
   class Create extends Writeback
     _method: 'post'
   class Remove extends Writeback
