@@ -12,7 +12,7 @@ _([
 ]).each (auth) ->
   describe "query #{JSON.stringify auth}", ->
 
-    before -> @clever = Clever auth, 'https://api.getclever.com'
+    before -> @clever = Clever auth, 'https://api.clever.com'
 
     it 'throws an error if you try to instantiate without an api key', ->
       assert.throws -> Clever()

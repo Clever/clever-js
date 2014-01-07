@@ -3,6 +3,7 @@ _           = require 'underscore'
 _.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
+certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 _(_.str.exports()).mixin()
 
@@ -20,7 +21,7 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-module.exports = (auth, url_base='https://api.getclever.com') ->
+module.exports = (auth, url_base='https://api.clever.com') ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -98,6 +99,7 @@ module.exports = (auth, url_base='https://api.getclever.com') ->
         uri: @_url
         qs: _({where: @_conditions}).extend @_options
         json: true
+        ca: certs
       apply_auth clever.auth, opts
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
@@ -116,6 +118,7 @@ module.exports = (auth, url_base='https://api.getclever.com') ->
         method: @_method
         uri: @_uri
         json: @_values
+        ca: certs
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
@@ -223,6 +226,7 @@ module.exports = (auth, url_base='https://api.getclever.com') ->
         method: 'put'
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
         json: obj
+        ca: certs
       apply_auth clever.auth, opts
       if _(obj).isFunction()
         cb = obj

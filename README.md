@@ -72,4 +72,4 @@ stream.on('end', function() {
 
 ## Feedback
 
-Questions, feature requests, or feedback of any kind is always welcome! We're available at [tech-support@getclever.com](mailto:tech-support@getclever.com).
+Questions, feature requests, or feedback of any kind is always welcome! We're available at [tech-support@clever.com](mailto:tech-support@clever.com).
