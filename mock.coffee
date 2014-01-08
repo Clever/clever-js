@@ -18,7 +18,7 @@ module.exports = (api_key, data_dir) ->
       try
         val = require(fp)
       catch err
-        throw "Error loading file at #{fp}: #{err}"
+        throw new Error "Error loading file at #{fp}: #{err}"
     return val or []
 
   clever.db =
@@ -40,19 +40,19 @@ module.exports = (api_key, data_dir) ->
         return false unless obj[key] is val
       return true
     .map (obj) ->
-      if obj._shadow? then  _.extend(obj, obj._shadow) else obj
+      if obj._shadow? then  _.extend({}, obj, obj._shadow) else obj
     .map (raw_json) ->
       Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
       return new Klass raw_json
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).chain(), @conditions, resource
+    s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
     cb null, s.value()
 
-  sandbox.stub clever.Query.prototype, 'stream', () ->
+  sandbox.stub clever.Query.prototype, 'stream', ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).stream(), @conditions, resource
+    s = apply_query _(clever.db[resource]).stream(), @_conditions, resource
     return s.stream()
 
   sandbox.stub clever.Resource.prototype, 'properties', (obj, cb) ->
@@ -66,7 +66,8 @@ module.exports = (api_key, data_dir) ->
     id = @_properties.id
     clever_resource = _(clever.db[resource]).findWhere({id:id})
     return cb(new Error("404")) unless clever_resource?
-    prop_obj = _(clever.db["#{resource_singular}properties"]).findWhere(_.object [[resource_singular, id]])
+    prop_obj = _(clever.db["#{resource_singular}properties"])
+      .findWhere(_.object [[resource_singular, id]])
     if not prop_obj
       prop_obj = _.object [[resource_singular, id], ['data', {}]]
       clever.db["#{resource_singular}properties"].push prop_obj
