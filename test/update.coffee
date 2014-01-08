@@ -9,21 +9,21 @@ describe 'update', ->
 
   before () -> @clever = Clever 'DEMO_KEY', 'http://httpbin.org'
 
-  it 'submits put requests', (done) ->
+  it 'submits patch requests', (done) ->
     @timeout 30000
-    district = new @clever.District { name: 'Test', id: '1212121' }, '/put'
+    district = new @clever.District { name: 'Test', id: '1212121' }, '/patch'
     district.set 'location.address', 'Tacos'
     district.save (err) ->
       assert.ifError err
-      assert.equal district.get('name'), undefined # httpbin echos back the put data, so object will lose this prop
+      assert.equal district.get('name'), undefined # httpbin echos back the patch data, so object will lose this prop
       assert.equal district.get('location.address'), 'Tacos'
       done()
 
-  it 'successfully handles invalid put requests that return a json', (done) ->
+  it 'successfully handles invalid patch requests that return a json', (done) ->
     @timeout 30000
     clever = Clever 'FAKE_KEY', 'http://fake_api.com'
     scope = nock('http://fake_api.com')
-      .put('/v1.1/districts/12121', {some_prop: "some_val"})
+      .patch('/v1.1/districts/12121', {some_prop: "some_val"})
       .reply(401, {error: 'unauthorized'})
     district = new clever.District
       name: 'Test'
@@ -38,11 +38,11 @@ describe 'update', ->
       scope.done()
       done()
 
-  it 'successfully handles invalid put requests that return a string', (done) ->
+  it 'successfully handles invalid patch requests that return a string', (done) ->
     @timeout 30000
     clever = Clever 'FAKE_KEY', 'http://fake_api.com'
     scope = nock('http://fake_api.com')
-      .put('/v1.1/districts/12121', {some_prop: "some_val"})
+      .patch('/v1.1/districts/12121', {some_prop: "some_val"})
       .reply(401, 'unauthorized')
     district = new clever.District
       name: 'Test'
