@@ -6,12 +6,12 @@ Clever    = require "#{__dirname}/../index"
 
 describe 'get/set properties', ->
 
-  before -> @clever = Clever 'DEMO_KEY', 'https://api.getclever.com'
+  before -> @clever = Clever 'DEMO_KEY', 'https://api.clever.com'
 
   after -> nock.cleanAll()
 
   it 'can hit second-level for properties', (done) ->
-    nock('https://api.getclever.com:443')
+    nock('https://api.clever.com:443')
       .get('/v1.1/districts?where=%7B%22id%22%3A%224fd43cc56d11340000000005%22%7D&limit=1').reply(200,
         data: [
           data:
