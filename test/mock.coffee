@@ -1,14 +1,14 @@
-assert = require 'assert'
-Clever    = require "#{__dirname}/../index"
-_     = require 'underscore'
-_.mixin require('understream').exports()
+_           = require 'underscore'
+assert      = require 'assert'
+Clever      = require "#{__dirname}/../index"
+Understream = require 'understream'
 
 describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
   before ->
     @clever = require("#{__dirname}/../mock") 'api key', "#{__dirname}/mock_data"
 
   it "supports streaming GETs", (done) ->
-    _(@clever.Student.find().stream()).stream().invoke('toJSON').run (err, data) ->
+    new Understream(@clever.Student.find().stream()).invoke('toJSON').run (err, data) ->
       assert.ifError err
       assert.deepEqual data, require("#{__dirname}/mock_data/students")
       done()

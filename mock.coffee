@@ -1,10 +1,10 @@
-sinon    = require 'sinon'
-Readable = require 'readable-stream'
-_        = require 'underscore'
-dotty    = require 'dotty'
-fs       = require 'fs'
+_           = require 'underscore'
+dotty       = require 'dotty'
+fs          = require 'fs'
+Readable    = require 'readable-stream'
+sinon       = require 'sinon'
+Understream = require 'understream'
 _.mixin require('underscore.string').exports()
-_.mixin require('understream').exports()
 
 module.exports = (api_key, data_dir) ->
   throw new Error "Must provide api_key" unless api_key?
@@ -52,7 +52,7 @@ module.exports = (api_key, data_dir) ->
 
   sandbox.stub clever.Query.prototype, 'stream', ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).stream(), @_conditions, resource
+    s = apply_query new Understream(clever.db[resource]), @_conditions, resource
     return s.stream()
 
   sandbox.stub clever.Resource.prototype, 'properties', (obj, cb) ->
