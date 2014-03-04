@@ -86,15 +86,15 @@ _([
         done()
 
     it 'find with a where condition', (done) ->
-      @clever.School.find().where('name').equals('Clever Academy').exec (err, schools) =>
+      @clever.School.find().where('name').equals('Clever High School').exec (err, schools) =>
         assert.equal schools.length, 1
         school = schools[0]
         assert (school instanceof @clever.School), "Incorrect type on school object"
-        assert.equal school.get('name'), 'Clever Academy'
+        assert.equal school.get('name'), 'Clever High School'
         done()
 
     it 'count works', (done) ->
-      @clever.School.find().where('name').equals('Clever Academy').count().exec (err, count) ->
+      @clever.School.find().where('name').equals('Clever High School').count().exec (err, count) ->
         assert.equal count, 1
         done()
 
@@ -115,22 +115,22 @@ _([
 
     it 'exists true with where works', (done) ->
       @clever.School.find().where('name').exists(true).count().exec (err, count) ->
-        assert.equal count, 4
+        assert.equal count, 3
         done()
 
     it 'exists without args works', (done) ->
       @clever.School.find().where('name').exists().count().exec (err, count) ->
-        assert.equal count, 4
+        assert.equal count, 3
         done()
 
     it 'exists true works', (done) ->
       @clever.School.find().exists('name', true).count().exec (err, count) ->
-        assert.equal count, 4
+        assert.equal count, 3
         done()
 
     it 'exists path works', (done) ->
       @clever.School.find().exists('name').count().exec (err, count) ->
-        assert.equal count, 4
+        assert.equal count, 3
         done()
 
     it 'exists false with where works', (done) ->
