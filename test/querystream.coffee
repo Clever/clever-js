@@ -10,7 +10,7 @@ describe 'querystream', ->
 
   it 'takes care of paging for you', (done) ->
     @timeout 40000
-    query = @clever.Section.find().limit(10)
+    query = @clever.Section.find().limit(100)
     stream = query.stream()
     cnt = 0
     stream.on 'data', (section) =>
