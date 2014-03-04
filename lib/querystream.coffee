@@ -19,8 +19,9 @@ class QueryStream extends Readable
     return if @running
     @running = true
     @query.exec (err, docs) =>
-      @emit 'error', err if err
-      #@emit 'data', doc for doc in docs
+      @emit 'error', err if err 
+      @emit 'error', new Error('No data returned from API') unless docs?
+
       @push doc for doc in docs
       if not @query.paging or @query.paging.current is @query.paging.total
         @push null
