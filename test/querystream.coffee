@@ -20,3 +20,16 @@ describe 'querystream', ->
     stream.on 'end', (err) ->
       assert.equal query.paging.count, cnt
       done()
+
+  it 'handles errors correctly', (done) ->
+    clever = Clever 'INVALID_KEY', 'https://api.clever.com'
+    query = clever.Section.find().limit(10)
+    stream = query.stream()
+    stream.on 'data', (section) ->
+      assert false, "no data should be returned for INVALID_KEY"
+    stream.on 'error', (err) ->
+      assert (err instanceof Error) and /received statusCode 401 instead of 200/.test(err)
+    stream.on 'end', (err) ->
+      assert.ifError err
+      done()
+
