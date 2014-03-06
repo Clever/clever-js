@@ -6,6 +6,7 @@ dotty       = require 'dotty'
 certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 _(_.str.exports()).mixin()
+_.mixin(require 'underscore.deep')
 
 handle_errors = (resp, body, cb) ->
   return cb null, resp, body if resp.statusCode is 200
@@ -200,7 +201,8 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         return cb null if not _(@_unsaved_values).keys().length
         w = new Update "#{clever.url_base}#{@_uri}", @_unsaved_values
       else
-        w = new Create "#{clever.url_base}#{@constructor.path}", _.extend({}, @_properties, @_unsaved_values)
+        #Create with the combination of @_properties and @_unsaved_values. Deepen @_unsaved_values so not to run into conflicts between potential dot notation and deep objects
+        w = new Create "#{clever.url_base}#{@constructor.path}", _.deepExtend(@_properties, @_unsaved_values)
         w.post 'exec', (resp, body, cb_post) =>
           self_link = _(body.links).find (link) -> link.rel is 'self'
           return cb_post new Error 'no self link' if not self_link?
