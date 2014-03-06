@@ -201,7 +201,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         return cb null if not _(@_unsaved_values).keys().length
         w = new Update "#{clever.url_base}#{@_uri}", @_unsaved_values
       else
-        #Create with the combination of @_properties and @_unsaved_values. Deepen @_unsaved_values so not to run into conflicts between potential dot notation and deep objects
+        #Create with the combination of @_properties and @_unsaved_values.
         w = new Create "#{clever.url_base}#{@constructor.path}", _.deepExtend(@_properties, @_unsaved_values)
         w.post 'exec', (resp, body, cb_post) =>
           self_link = _(body.links).find (link) -> link.rel is 'self'

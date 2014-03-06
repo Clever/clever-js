@@ -19,11 +19,23 @@ describe 'create', ->
         {
           data:
             name: 'Test'
-            location: address: 'Tacos' # Casa Bonita
+            location:
+              address: 'Tacos' # Casa Bonita
+              city: 'Burritos'
           links: [{rel: 'self', uri: '/v1.1/districts/1235'}]
         }
       )
     afterEach -> @scope.done()
+
+    assert_correct_district_save = (district, done) ->
+      district.save (err) ->
+        assert.ifError err
+        assert.equal district.get('name'), 'Test'
+        assert.equal district.get('location.address'), 'Tacos'
+        assert.equal district.get('location.city'), 'Burritos'
+        assert.deepEqual district.get('location'), {address: 'Tacos', city: 'Burritos'}
+        assert.equal district._uri, '/v1.1/districts/1235'
+        done()
 
     it 'when created using the constructor', (done) ->
       district = new @clever.District
@@ -31,24 +43,14 @@ describe 'create', ->
         location:
           address: 'Tacos'
           city: 'Burritos'
-      district.save (err) ->
-        assert.ifError err
-        assert.equal district.get('name'), 'Test'
-        assert.equal district.get('location.address'), 'Tacos'
-        assert.equal district._uri, '/v1.1/districts/1235'
-        done()
+      assert_correct_district_save district, done
 
     it 'when created using .set()', (done) ->
       district = new @clever.District({})
       district.set("name", "Test")
       district.set("location.address", "Tacos")
       district.set("location.city", "Burritos")
-      district.save (err) ->
-        assert.ifError err
-        assert.equal district.get('name'), 'Test'
-        assert.equal district.get('location.address'), 'Tacos'
-        assert.equal district._uri, '/v1.1/districts/1235'
-        done()
+      assert_correct_district_save district, done
 
     it 'when created using .set() and the constructor', (done) ->
       district = new @clever.District
@@ -57,12 +59,7 @@ describe 'create', ->
           address: "Tacos"
           city: "Tostada" #No one likes tostadas
       district.set("location.city", "Burritos")
-      district.save (err) ->
-        assert.ifError err
-        assert.equal district.get('name'), 'Test'
-        assert.equal district.get('location.address'), 'Tacos'
-        assert.equal district._uri, '/v1.1/districts/1235'
-        done()
+      assert_correct_district_save district, done
 
   it 'successfully handles invalid post requests that return a json', (done) ->
     @timeout 30000
