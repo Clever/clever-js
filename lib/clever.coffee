@@ -200,7 +200,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         return cb null if not _(@_unsaved_values).keys().length
         w = new Update "#{clever.url_base}#{@_uri}", @_unsaved_values
       else
-        w = new Create "#{clever.url_base}#{@constructor.path}", @_properties
+        w = new Create "#{clever.url_base}#{@constructor.path}", _.extend({}, @_properties, @_unsaved_values)
         w.post 'exec', (resp, body, cb_post) =>
           self_link = _(body.links).find (link) -> link.rel is 'self'
           return cb_post new Error 'no self link' if not self_link?

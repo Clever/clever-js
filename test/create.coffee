@@ -24,8 +24,7 @@ describe 'create', ->
       )
     district = new @clever.District
       name: 'Test'
-      location:
-        address: 'Tacos'
+    district.set("location.address", "Tacos")
     district.save (err) ->
       assert.ifError err
       assert.equal district.get('name'), 'Test'
