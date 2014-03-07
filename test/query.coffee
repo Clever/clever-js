@@ -8,7 +8,7 @@ nock      = require 'nock'
 _([
   'DEMO_KEY'
   {api_key: 'DEMO_KEY'}
-  {token: '7f76343d50b9e956138169e8cbb4630bb887b18'}
+  {token: 'DEMO_TOKEN'}
 ]).each (auth) ->
   describe "query #{JSON.stringify auth}", ->
 
