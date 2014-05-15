@@ -1,11 +1,9 @@
 async       = require 'async'
 _           = require 'underscore'
-_.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
 certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
-_(_.str.exports()).mixin()
 _.mixin(require 'underscore.deep')
 
 handle_errors = (resp, body, cb) ->
@@ -46,7 +44,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
       @_curr_path = null
 
       # TODO: all
-      _('gt gte lt lte ne in nin regex size').chain().words().each (conditional) =>
+      _(['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'regex', 'size']).each (conditional) =>
         @[conditional] = (path, val) =>
           if arguments.length is 1
             val = path
@@ -56,7 +54,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
           @
 
       # TODO: skip (need support in api)
-      _('limit page').chain().words().each (method) =>
+      _(['limit', 'page']).each (method) =>
         @[method] = (val) =>
           @_options[method] = val
           @

@@ -1,10 +1,8 @@
 async       = require 'async'
 _           = require 'underscore'
-_.str       = require 'underscore.string'
 quest       = require 'quest'
 dotty       = require 'dotty'
 {Readable}    = require 'readable-stream'
-_(_.str.exports).mixin()
 
 # takes in a Query, runs it and emits events
 class QueryStream extends Readable
