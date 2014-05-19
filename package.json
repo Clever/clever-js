@@ -34,5 +34,8 @@
   "scripts": {
     "test": "make -Br test",
     "test-cov": "make -Br test-cov"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
   }
 }
