@@ -6,7 +6,7 @@ test-cov:
 	open coverage.html
 
 test:
-	NODE_ENV=test node_modules/mocha/bin/mocha --ignore-leaks --timeout 60000 --compilers coffee:coffee-script test/*.coffee
+	NODE_ENV=test node_modules/mocha/bin/mocha --ignore-leaks --timeout 60000 --reporter spec --compilers coffee:coffee-script test/*.coffee
 
 clean:
 	rm -rf lib-js lib-js-cov

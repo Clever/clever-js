@@ -30,7 +30,6 @@ module.exports = (api_key, data_dir) ->
     teacherproperties: trequire("#{data_dir}/teacherproperties")
     schools: trequire("#{data_dir}/schools")
     schoolproperties: trequire("#{data_dir}/schoolproperties")
-  console.log "loaded #{clever.db[key].length} #{key}" for key, val of clever.db
 
   sandbox = sinon.sandbox.create()
 
