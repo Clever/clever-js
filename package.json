@@ -22,10 +22,10 @@
     "underscore.deep": "0.0.5"
   },
   "devDependencies": {
-    "nock": "~0.15.2",
     "mocha": "~1.7.4",
     "sinon": "~1.7.3",
-    "understream": "~0.8.0"
+    "understream": "~0.8.0",
+    "nock": "~0.37.0"
   },
   "engines": {
     "node": ">=0.10.x",

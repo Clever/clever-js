@@ -20,7 +20,7 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-module.exports = (auth, url_base='https://api.clever.com') ->
+module.exports = (auth, url_base='https://api.clever.com', additional_options={}) ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -99,6 +99,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         qs: _({where: @_conditions}).extend @_options
         json: true
         ca: certs
+      _(opts).extend(headers: additional_options.headers) if additional_options.headers
       apply_auth clever.auth, opts
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
@@ -118,6 +119,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         uri: @_uri
         json: @_values
         ca: certs
+      _(opts).extend(headers: additional_options.headers) if additional_options.headers
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
@@ -227,6 +229,7 @@ module.exports = (auth, url_base='https://api.clever.com') ->
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
         json: obj
         ca: certs
+      _(opts).extend(headers: additional_options.headers) if additional_options.headers
       apply_auth clever.auth, opts
       if _(obj).isFunction()
         cb = obj
