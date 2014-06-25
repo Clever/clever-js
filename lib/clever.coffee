@@ -20,7 +20,7 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-module.exports = (auth, url_base='https://api.clever.com', additional_options={}) ->
+module.exports = (auth, url_base='https://api.clever.com', options={}) ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -99,7 +99,7 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
         qs: _({where: @_conditions}).extend @_options
         json: true
         ca: certs
-      _(opts).extend(headers: additional_options.headers) if additional_options.headers
+      _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
@@ -119,7 +119,7 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
         uri: @_uri
         json: @_values
         ca: certs
-      _(opts).extend(headers: additional_options.headers) if additional_options.headers
+      _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, cb
@@ -134,20 +134,20 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
   class Resource
     @path: null
 
-    @_process_args: (conditions, fields, options={}, cb) ->
+    @_process_args: (conditions, fields, find_options={}, cb) ->
       if _(conditions).isFunction()
         cb = conditions
         conditions = {}
         fields = null
-        options = {}
+        find_options = {}
       else if _(fields).isFunction()
         cb = fields
         fields = null
-        options = {}
-      else if _(options).isFunction()
-        cb = options
-        options = {}
-      [conditions, fields, options, cb]
+        find_options = {}
+      else if _(find_options).isFunction()
+        cb = find_options
+        find_options = {}
+      [conditions, fields, find_options, cb]
 
     @_uri_to_class: (uri) ->
       klasses = _(clever).filter (val, key) -> val.path? # Filter out properties that aren't resources (e.g. api_path)
@@ -155,9 +155,9 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
       throw new Error "Could not get type from uri: #{uri}, #{JSON.stringify klasses, undefined, 2}" if not Klass
       Klass
 
-    @find: (conditions, fields, options, cb) ->
-      [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
-      q = new Query "#{clever.url_base}#{@path}", conditions, options
+    @find: (conditions, fields, find_options, cb) ->
+      [conditions, fields, find_options, cb] = @_process_args conditions, fields, find_options, cb
+      q = new Query "#{clever.url_base}#{@path}", conditions, find_options
       q.select fields
       q.post 'exec', (resp, body, cb_post) =>
         q.paging = body.paging
@@ -173,21 +173,21 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
       return q if not cb
       q.exec cb
 
-    @findOne: (conditions, fields, options, cb) ->
-      [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
-      _(options).extend {limit: 1}
+    @findOne: (conditions, fields, find_options, cb) ->
+      [conditions, fields, find_options, cb] = @_process_args conditions, fields, find_options, cb
+      _(find_options).extend {limit: 1}
       if not cb
-        q = @find conditions, fields, options
+        q = @find conditions, fields, find_options
         q.post 'exec', (results, cb_post) -> cb_post null, results[0]
         q
       else
-        @find conditions, fields, options, (err, docs) -> cb err, docs?[0]
+        @find conditions, fields, find_options, (err, docs) -> cb err, docs?[0]
 
-    @findById: (id, fields, options, cb) ->
+    @findById: (id, fields, find_options, cb) ->
       throw new Error 'must specify an ID for findById' unless _(id).isString()
       conditions = id: id
-      [conditions, fields, options, cb] = @_process_args conditions, fields, options, cb
-      @findOne conditions, fields, options, cb
+      [conditions, fields, find_options, cb] = @_process_args conditions, fields, find_options, cb
+      @findOne conditions, fields, find_options, cb
 
     constructor: (@_properties, @_uri, @_links) -> @_unsaved_values = {}
 
@@ -229,7 +229,7 @@ module.exports = (auth, url_base='https://api.clever.com', additional_options={}
         uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
         json: obj
         ca: certs
-      _(opts).extend(headers: additional_options.headers) if additional_options.headers
+      _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       if _(obj).isFunction()
         cb = obj
