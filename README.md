@@ -1,6 +1,6 @@
 # Clever Javascript Library
 
-[![Build Status](https://secure.travis-ci.org/Clever/clever-js.png)](http://travis-ci.org/Clever/clever-js)
+![Build Status](https://drone.ops.clever.com/github.com/Clever/clever-js/status.svg?branch=master)
 
 ## Installation
 
