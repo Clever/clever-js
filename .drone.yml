@@ -2,7 +2,16 @@ image: node0.10
 script:
   - npm install
   - npm test
+  - nvm install 0.10.29
+  - nvm use 0.10.29
 notify:
   email:
     recipients:
       - drone@clever.com
+publish:
+  npm:
+    email: {{email}}
+    username: {{username}}
+    password: {{password}}
+    branch: master
+    registry: "https://clever.registry.nodejitsu.com"
