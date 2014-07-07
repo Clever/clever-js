@@ -234,7 +234,11 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       if _(obj).isFunction()
         cb = obj
         _(opts).extend { method: 'get', json: true }
-      quest opts, (err, resp, body) => cb err, body?.data
+      quest opts, (err, resp, body) =>
+        return cb err if err
+        handle_errors resp, body, (err, resp, body) ->
+          return cb err if err
+          cb err, body?.data
 
   class District extends Resource
     @path: '/v1.1/districts'

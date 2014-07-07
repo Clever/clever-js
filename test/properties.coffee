@@ -43,3 +43,15 @@ describe 'get/set properties', ->
         assert.deepEqual { test: 'data', some: { really: { nested: 'property' } } }, properties
         cb_wf()
     ], done
+
+  it 'checks response codes on properties', (done) ->
+    scope = nock('https://api.clever.com')
+      .get('/v1.1/districts/1212121/properties')
+      .reply(504, {error: 'trolling'})
+    district = new @clever.District { name: 'Test', id: '1212121' }
+    district.properties (err, props) ->
+      assert not props, "found properties"
+      assert err, "didn't find an error"
+      assert.equal err.message, "received statusCode 504 instead of 200"
+      scope.done()
+      done()
