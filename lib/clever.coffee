@@ -160,7 +160,7 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       q = new Query "#{clever.url_base}#{@path}", conditions, find_options
       q.select fields
       q.post 'exec', (resp, body, cb_post) =>
-        q.paging = body.paging
+        q.links = body.links
         if body.data
           results = _(body.data).map (doc) =>
             Klass = @_uri_to_class doc.uri

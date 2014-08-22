@@ -10,16 +10,24 @@ describe 'querystream', ->
 
   it 'takes care of paging for you', (done) ->
     @timeout 40000
-    query = @clever.Section.find().limit(100)
-    stream = query.stream()
-    cnt = 0
-    stream.on 'data', (section) =>
-      cnt += 1
-      assert (section instanceof @clever.Section), "Incorrect type on section object"
-    stream.on 'error', (err) -> assert false, "There shouldn't be an error: #{err}"
-    stream.on 'end', (err) ->
-      assert.equal query.paging.count, cnt
-      done()
+    async.waterfall [
+      (cb_w) =>
+        query = @clever.Section.find().count().exec cb_w
+      (count, cb_w) =>
+        query = @clever.Section.find().limit(100)
+        stream = query.stream()
+        cur = 0
+        stream.on 'data', (section) =>
+          cur += 1
+          assert (section instanceof @clever.Section), "Incorrect type on section object"
+        stream.on 'error', (err) -> assert false, "There shouldn't be an error: #{err}"
+        stream.on 'end', (err) ->
+          assert _.filter(query.links, (link) -> link.rel is 'next').length is 0,
+            'No next links should remain'
+          assert cur is count, "Only got #{cur}/#{count} entries!"
+          done()
+    ], assert.ifError
+
 
   it 'handles errors correctly', (done) ->
     clever = Clever 'INVALID_KEY', 'https://api.clever.com'
