@@ -54,7 +54,7 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
           @
 
       # TODO: skip (need support in api)
-      _(['limit', 'page']).each (method) =>
+      _(['limit', 'page', 'starting_after', 'ending_before']).each (method) =>
         @[method] = (val) =>
           @_options[method] = val
           @
