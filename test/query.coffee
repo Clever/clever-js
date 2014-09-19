@@ -93,6 +93,53 @@ _([
         assert.equal school.get('name'), 'Clever High School'
         done()
 
+    it 'successfully generates correct link with ending_before', (done) ->
+      @timeout 30000
+      clever = Clever 'FAKE_KEY', 'http://fake_api.com'
+      scope = nock('http://fake_api.com')
+        .get('/v1.1/students?where=%7B%7D&ending_before=last')
+        .reply(401, {error: 'test succeeded'})
+      clever.Student.find().ending_before('last').exec (err, students) ->
+        assert not students
+        assert.equal err.message, "received statusCode 401 instead of 200"
+        assert.deepEqual err.body, {error: 'test succeeded'}
+        scope.done()
+        done()
+
+    it 'successfully generates correct link with starting_after', (done) ->
+      @timeout 30000
+      clever = Clever 'FAKE_KEY', 'http://fake_api.com'
+      scope = nock('http://fake_api.com')
+        .get('/v1.1/students?where=%7B%7D&starting_after=12345')
+        .reply(401, {error: 'test succeeded'})
+      clever.Student.find().starting_after('12345').exec (err, students) ->
+        assert not students
+        assert.equal err.message, "received statusCode 401 instead of 200"
+        assert.deepEqual err.body, {error: 'test succeeded'}
+        scope.done()
+        done()
+
+    it 'find with starting_after and ending_before', (done) ->
+      before_students = []
+      async.waterfall [
+        (cb_wf) =>
+          # get the last 2 students
+          @clever.Student.find().limit(2).ending_before('last').exec (err, students) =>
+            before_students = students
+            assert.equal students.length, 2
+            assert (students[0] instanceof @clever.Student), "Incorrect type on student object"
+            cb_wf()
+        (cb_wf) =>
+          # get the students after the second to last student
+          @clever.Student.find().starting_after(before_students[0].get 'id').exec (err, students) =>
+            assert.equal students.length, 1
+            assert.equal students[0].get('id'), before_students[1].get('id')
+            assert (students[0] instanceof @clever.Student), "Incorrect type on student object"
+            cb_wf()
+       ], (err) =>
+        assert.ifError err
+        done()
+
     it 'count works', (done) ->
       @clever.School.find().where('name').equals('Clever High School').count().exec (err, count) ->
         assert.equal count, 1
