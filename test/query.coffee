@@ -123,12 +123,14 @@ _([
       before_students = []
       async.waterfall [
         (cb_wf) =>
+          # get the last 2 students
           @clever.Student.find().limit(2).ending_before('last').exec (err, students) =>
             before_students = students
             assert.equal students.length, 2
             assert (students[0] instanceof @clever.Student), "Incorrect type on student object"
             cb_wf()
         (cb_wf) =>
+          # get the students after the second to last student
           @clever.Student.find().starting_after(before_students[0].get 'id').exec (err, students) =>
             assert.equal students.length, 1
             assert.equal students[0].get('id'), before_students[1].get('id')
