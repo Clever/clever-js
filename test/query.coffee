@@ -162,22 +162,22 @@ _([
 
     it 'exists true with where works', (done) ->
       @clever.School.find().where('name').exists(true).count().exec (err, count) ->
-        assert.equal count, 3
+        assert.equal count, 4
         done()
 
     it 'exists without args works', (done) ->
       @clever.School.find().where('name').exists().count().exec (err, count) ->
-        assert.equal count, 3
+        assert.equal count, 4
         done()
 
     it 'exists true works', (done) ->
       @clever.School.find().exists('name', true).count().exec (err, count) ->
-        assert.equal count, 3
+        assert.equal count, 4
         done()
 
     it 'exists path works', (done) ->
       @clever.School.find().exists('name').count().exec (err, count) ->
-        assert.equal count, 3
+        assert.equal count, 4
         done()
 
     it 'exists false with where works', (done) ->
