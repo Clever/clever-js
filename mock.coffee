@@ -47,6 +47,7 @@ module.exports = (api_key, data_dir) ->
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
     s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
+    return cb null, s.value().length if @_options.count
     cb null, s.value()
 
   sandbox.stub clever.Query.prototype, 'stream', ->
