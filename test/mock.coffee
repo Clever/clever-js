@@ -13,6 +13,12 @@ describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
       assert.deepEqual data, require("#{__dirname}/mock_data/students")
       done()
 
+  it "supports count", (done) ->
+    @clever.Student.find().count().exec (err, count) ->
+      assert.ifError err
+      assert.equal count, require("#{__dirname}/mock_data/students").length
+      done()
+
   it "supports non-streaming GETs", (done) ->
     @clever.Student.find().exec (err, data) ->
       assert.ifError err
