@@ -5,6 +5,7 @@ Readable    = require 'readable-stream'
 sinon       = require 'sinon'
 Understream = require 'understream'
 _.mixin require('underscore.string').exports()
+_.mixin require('underscore.deep')
 
 module.exports = (api_key, data_dir) ->
   throw new Error "Must provide api_key" unless api_key?
@@ -42,7 +43,7 @@ module.exports = (api_key, data_dir) ->
       if obj._shadow? then  _.extend({}, obj, obj._shadow) else obj
     .map (raw_json) ->
       Klass = clever[_(resource).chain().capitalize().rtrim('s').value()]
-      return new Klass raw_json
+      return new Klass _.deepClone raw_json
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
@@ -76,6 +77,6 @@ module.exports = (api_key, data_dir) ->
       if obj.google_apps?.username?
         clever_resource._shadow ?= {}
         clever_resource._shadow.email = obj.google_apps.username
-    return cb null, prop_obj.data
+    return cb null, _.deepClone prop_obj.data
 
   clever

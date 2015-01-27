@@ -19,7 +19,7 @@
     "dotty": "0.0.1",
     "quest": "~0.2.4",
     "readable-stream": "~1.0.2",
-    "underscore.deep": "0.0.5"
+    "underscore.deep": "~0.5.1"
   },
   "devDependencies": {
     "mocha": "~1.7.4",
