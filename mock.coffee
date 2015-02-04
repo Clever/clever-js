@@ -48,8 +48,8 @@ module.exports = (api_key, data_dir) ->
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
     s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
-    return cb null, s.value().length if @_options.count
-    cb null, s.value()
+    return setImmediate cb, null, s.value().length if @_options.count
+    setImmediate cb, null, s.value()
 
   sandbox.stub clever.Query.prototype, 'stream', ->
     resource = _.strRightBack(@_url, '/')
@@ -66,7 +66,7 @@ module.exports = (api_key, data_dir) ->
     resource_singular = _(resource).rtrim('s')
     id = @_properties.id
     clever_resource = _(clever.db[resource]).findWhere({id:id})
-    return cb(new Error("404")) unless clever_resource?
+    return setImmediate cb, new Error("404") unless clever_resource?
     prop_obj = _(clever.db["#{resource_singular}properties"])
       .findWhere(_.object [[resource_singular, id]])
     if not prop_obj
@@ -77,6 +77,6 @@ module.exports = (api_key, data_dir) ->
       if obj.google_apps?.username?
         clever_resource._shadow ?= {}
         clever_resource._shadow.email = obj.google_apps.username
-    return cb null, _.deepClone prop_obj.data
+    setImmediate cb, null, _.deepClone prop_obj.data
 
   clever
