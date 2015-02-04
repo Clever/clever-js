@@ -1,5 +1,6 @@
 _           = require 'underscore'
 assert      = require 'assert'
+async      = require 'async'
 Clever      = require "#{__dirname}/../index"
 Understream = require 'understream'
 
@@ -25,12 +26,47 @@ describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
       assert.deepEqual _(data).invoke('toJSON'), require("#{__dirname}/mock_data/students")
       done()
 
+  it "deep copies data", (done) ->
+    async.waterfall [
+      (cb_wf) =>
+        @clever.Student.find().exec (err, students) ->
+          assert.ifError err
+          name = students[0].get 'name'
+          assert.equal name.first, "John"
+          name.first = 'WRONG NAME'
+          cb_wf()
+      (cb_wf) =>
+        @clever.Student.find().exec (err, students) ->
+          assert.ifError err
+          name = students[0].get 'name'
+          assert.equal name.first, "John"
+          cb_wf()
+    ], done
+
+
   it "supports GETting properties", (done) ->
     @clever.Student.find().exec (err, students) => # TODO: get findOne working
       students[0].properties (err, data) =>
         assert.ifError err
         assert.deepEqual data, _(require("#{__dirname}/mock_data/studentproperties")).findWhere({student: students[0].get('id')}).data
-      done()
+        done()
+
+  it "supports deep copies of properties", (done) -> # depends on previous test
+    async.waterfall [
+      (cb_wf) =>
+        @clever.Student.find().exec (err, students) =>
+          students[0].properties (err, data) =>
+            assert.ifError err
+            assert.equal data.foo, "bar"
+            data.foo = 'WRONG FOO'
+            cb_wf()
+      (cb_wf) =>
+        @clever.Student.find().exec (err, students) =>
+          students[0].properties (err, data) =>
+            assert.ifError err
+            assert.equal data.foo, "bar"
+            cb_wf()
+    ], done
 
   it "supports PUTting properties", (done) ->
     @clever.Student.find().exec (err, students) =>
