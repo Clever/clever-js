@@ -3,6 +3,8 @@ script:
   - npm config set ca ""
   - npm install
   - npm test
+  - nvm install 0.10.29
+  - nvm use 0.10.29
 notify:
   email:
     recipients:
