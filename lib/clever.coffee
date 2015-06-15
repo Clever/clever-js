@@ -251,7 +251,7 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
   class Teacher extends Resource
     @path: '/v1.1/teachers'
   class Event extends Resource
-    @path: '/v1.1/push/events'
+    @path: '/v1.1/events'
 
   _(clever).extend
     Resource : Resource
