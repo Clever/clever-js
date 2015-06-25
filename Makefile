@@ -10,3 +10,5 @@ test:
 
 clean:
 	rm -rf lib-js lib-js-cov
+
+.PHONY: test-cov test
