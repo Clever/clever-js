@@ -1,5 +1,4 @@
 async     = require 'async'
-fs        = require 'fs'
 assert    = require 'assert'
 _         = require 'underscore'
 Clever    = require "#{__dirname}/../index"
