@@ -1,5 +1,4 @@
 async     = require 'async'
-fs        = require 'fs'
 assert    = require 'assert'
 _         = require 'underscore'
 Clever    = require "#{__dirname}/../index"
@@ -78,14 +77,16 @@ _([
         assert.equal district.get('name'), 'Demo District'
         done()
 
-    it 'findById with exec', (done) ->
+    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
+    it.skip 'findById with exec', (done) ->
       @clever.District.findById("4fd43cc56d11340000000005").exec (err, district) =>
         assert not _(district).isArray()
         assert (district instanceof @clever.District), "Incorrect type on district object"
         assert.equal district.get('name'), 'Demo District'
         done()
 
-    it 'find with a where condition', (done) ->
+    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
+    it.skip 'find with a where condition', (done) ->
       @clever.School.find().where('name').equals('Clever High School').exec (err, schools) =>
         assert.equal schools.length, 1
         school = schools[0]
@@ -140,7 +141,8 @@ _([
         assert.ifError err
         done()
 
-    it 'count works', (done) ->
+    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
+    it.skip 'count works', (done) ->
       @clever.School.find().where('name').equals('Clever High School').count().exec (err, count) ->
         assert.equal count, 1
         done()
