@@ -299,8 +299,7 @@ Clever.setPromiseProvider = (Provider) ->
 Clever.me = (token, url_base..., cb) ->
   url_base = url_base[0]
   url_base ?= API_BASE
-  auth = {token: token} if _.isString(token)
-  auth ?= {token: token.access_token or token.token}
+  auth = {token: token?.access_token or token?.token or token}
   opts =
     method: 'get'
     ca: certs
@@ -338,8 +337,7 @@ Clever.OAuth = class OAuth
     make_request opts, cb
 
   @tokenInfo: (token, cb) ->
-    auth = {token: token} if _.isString(token)
-    auth ?= {token: token.access_token or token.token}
+    auth = {token: token?.access_token or token?.token or token}
     opts =
       json: true
       ca: certs
