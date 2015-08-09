@@ -257,14 +257,10 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
         ca: certs
       _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
-      if _(obj).isFunction()
+      if not obj or _(obj).isFunction()
         cb = obj
         _(opts).extend { method: 'get', json: true }
-      quest opts, (err, resp, body) =>
-        return cb err if err
-        handle_errors resp, body, (err, resp, body) ->
-          return cb err if err
-          cb err, body?.data
+      make_request opts, cb
 
   class District extends Resource
     @path: '/v1.1/districts'
