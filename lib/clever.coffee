@@ -11,6 +11,8 @@ _.mixin(require 'underscore.deep')
 API_BASE = 'https://api.clever.com'
 CLEVER_BASE = 'https://clever.com'
 
+Promise = Q.Promise
+
 handle_errors = (resp, body, cb) ->
   return cb?(null, resp, body) if resp.statusCode is 200
   err = new Error "received statusCode #{resp.statusCode} instead of 200"
@@ -26,15 +28,15 @@ apply_auth = (auth, http_opts) ->
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
 make_request = (opts, cb) ->
-  p = Q.defer()
-  quest opts, (err, resp, body) ->
-    handle_errors resp, body, (err, resp, body) ->
-      p.reject err if err
-      p.resolve body?.data
-      return cb?(err) if err
-      cb?(err, body?.data)
+  promise = new Promise (resolve, reject) ->
+    quest opts, (err, resp, body) ->
+      handle_errors resp, body, (err, resp, body) ->
+        reject err if err
+        resolve body?.data
+        return cb?(err) if err
+        cb?(err, body?.data)
   return cb if _.isFunction(cb)
-  p.promise
+  promise
 
 Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
   throw new Error 'Must provide auth' if not auth
@@ -109,7 +111,6 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       @
 
     exec: (cb) =>
-      p = Q.defer()
       opts =
         method: 'get'
         uri: @_url
@@ -121,13 +122,14 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       waterfall = [async.apply quest, opts].concat(@_post.exec or [])
-      async.waterfall waterfall, (err, data) ->
-        p.reject err if err
-        p.resolve data
-        return cb?(err) if err
-        cb?(err, data)
+      promise = new Promise (resolve, reject) ->
+        async.waterfall waterfall, (err, data) ->
+          reject err if err
+          resolve data
+          return cb?(err) if err
+          cb?(err, data)
       return cb if _.isFunction(cb)
-      p.promise
+      promise
 
     stream: () => new QueryStream @
 
@@ -137,7 +139,6 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       super()
       @post 'exec', handle_errors
     exec: (cb) =>
-      p = Q.defer()
       opts =
         method: @_method
         uri: @_uri
@@ -146,13 +147,14 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
-      async.waterfall waterfall, (err, data) ->
-        p.reject err if err
-        p.resolve data
-        return cb?(err) if err
-        cb?(err, data)
+      promise = new Promise (resolve, reject) ->
+        async.waterfall waterfall, (err, data) ->
+          reject err if err
+          resolve data
+          return cb?(err) if err
+          cb?(err, data)
       return cb if _.isFunction(cb)
-      p.promise
+      promise
   class Update extends Writeback
     _method: 'patch'
   class Create extends Writeback
@@ -290,6 +292,9 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
     Query    : Query
 
 Clever.handle_errors = handle_errors
+
+Clever.setPromiseProvider = (Provider) ->
+  Promise = Provider
 
 Clever.me = (token, url_base..., cb) ->
   url_base = url_base[0]
