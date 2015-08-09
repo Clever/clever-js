@@ -294,7 +294,7 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
 Clever.handle_errors = handle_errors
 
 Clever.setPromiseProvider = (Provider) ->
-  Promise = Provider
+  Promise = Provider if _.isFunction(Provider)
 
 Clever.me = (token, url_base..., cb) ->
   url_base = url_base[0]
