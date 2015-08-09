@@ -1,3 +1,4 @@
+# vim: set sw=2 ts=2 softtabstop=2 expandtab tw=120 :
 async     = require 'async'
 assert    = require 'assert'
 _         = require 'underscore'
@@ -39,6 +40,17 @@ _([
         assert.equal district.get('name'), 'Demo District'
         done()
 
+    it 'find with conditions and exec promise', (done) ->
+      @clever.District.find(id: "4fd43cc56d11340000000005").exec().then((districts) =>
+        assert.equal districts.length, 1
+        district = districts[0]
+        assert (district instanceof @clever.District), "Incorrect type on district object"
+        assert.equal district.get('name'), 'Demo District'
+        done()
+      , (err) =>
+        assert.fail err, null, 'unexpected error'
+      ).done()
+
     it 'findOne with no arguments', (done) ->
       @clever.District.findOne (err, district) =>
         assert not _(district).isArray()
@@ -60,6 +72,16 @@ _([
         assert.equal district.get('name'), 'Demo District'
         done()
 
+    it 'findOne with conditions and exec promise', (done) ->
+      @clever.District.findOne(id: "4fd43cc56d11340000000005").exec().then((district) =>
+        assert not _(district).isArray()
+        assert (district instanceof @clever.District), "Incorrect type on district object"
+        assert.equal district.get('name'), 'Demo District'
+        done()
+      , (err) =>
+        assert.fail err, null, 'unexpected error'
+      ).done()
+
     it 'findById with no conditions throws', (done) ->
       assert.throws(
         () =>
@@ -76,6 +98,17 @@ _([
         assert (district instanceof @clever.District), "Incorrect type on district object"
         assert.equal district.get('name'), 'Demo District'
         done()
+
+    it 'findById with exec promise', (done) ->
+      @timeout 30000
+      @clever.District.findById("4fd43cc56d11340000000005").exec().then((district) =>
+        assert not _(district).isArray()
+        assert (district instanceof @clever.District), "Incorrect type on district object"
+        assert.equal district.get('name'), 'Demo District'
+        done()
+      , (err) =>
+        assert.fail err, null, 'unexpected error'
+      ).done()
 
     # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
     it.skip 'findById with exec', (done) ->
