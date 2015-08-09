@@ -20,7 +20,7 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-module.exports = (auth, url_base='https://api.clever.com', options={}) ->
+Clever = module.exports = (auth, url_base='https://api.clever.com', options={}) ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -264,3 +264,37 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
     Query    : Query
 
 module.exports.handle_errors = handle_errors
+Clever.handle_errors = handle_errors
+
+Clever.Token = class Token
+  @url_base: 'https://clever.com'
+  @api_base: 'https://api.clever.com'
+  @path: '/oauth/tokens'
+
+  @find: (client_id, client_secret, owner_type..., cb) ->
+    owner_type = owner_type[0]
+    owner_type ?= 'district'
+    opts =
+      method: 'get'
+      ca: certs
+      json: true
+      auth: "#{client_id}:#{client_secret}"
+      uri: "#{@url_base}#{@path}?owner_type=#{owner_type}"
+    quest opts, (err, resp, body) ->
+      handle_errors resp, body, (err, resp, body) ->
+        return cb?(err) if err
+        cb?(err, body?.data)
+
+  @details: (token, cb) ->
+    auth = {token: token} if _.isString(token)
+    auth ?= {token: token.access_token}
+    opts =
+      method: 'get'
+      ca: certs
+      json: true
+      uri: "#{@api_base}/me"
+    apply_auth auth, opts
+    quest opts, (err, resp, body) ->
+      handle_errors resp, body, (err, resp, body) ->
+        return cb?(err) if err
+        cb?(err, body?.data)
