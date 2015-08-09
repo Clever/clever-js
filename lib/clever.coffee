@@ -296,15 +296,15 @@ Clever.handle_errors = handle_errors
 Clever.setPromiseProvider = (Provider) ->
   Promise = Provider if _.isFunction(Provider)
 
-Clever.me = (token, url_base..., cb) ->
-  url_base = url_base[0]
-  url_base ?= API_BASE
+Clever.me = (token, optional..., cb) ->
   auth = {token: token?.access_token or token?.token or token}
+  url_base = optional?.url_base or API_BASE
+  path = optional?.path or '/me'
   opts =
     method: 'get'
     ca: certs
     json: true
-    uri: "#{url_base}/me"
+    uri: "#{url_base}#{path}"
   apply_auth auth, opts
   make_request opts, cb
 
@@ -314,34 +314,40 @@ Clever.OAuth = class OAuth
   @info_path: '/oauth/tokeninfo'
 
   @tokens: (client_id, client_secret, optional..., cb) ->
-    owner_type = optional[0]
-    owner_type ?= 'district'
+    owner_type = optional?.owner_type or 'district'
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @tokens_path
     opts =
       method: 'get'
       ca: certs
       json: true
       auth: "#{client_id}:#{client_secret}"
-      uri: "#{@url_base}#{@tokens_path}?owner_type=#{owner_type}"
+      uri: "#{url_base}#{path}?owner_type=#{owner_type}"
     make_request opts, cb
 
-  @token: (client_id, client_secret, code, redirect_uri, cb) ->
+  @token: (client_id, client_secret, code, redirect_uri, optional..., cb) ->
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @tokens_path
+    grant_type = optional?.grant_type or 'authorization_code'
     opts =
       auth: "#{client_id}:#{client_secret}"
       ca: certs
       method: 'post'
-      uri: "#{@url_base}#{@tokens_path}"
+      uri: "#{url_base}#{path}"
       json:
-        grant_type: 'authorization_code'
+        grant_type: grant_type
         code: code
         redirect_uri: redirect_uri
     make_request opts, cb
 
-  @tokenInfo: (token, cb) ->
+  @tokenInfo: (token, optional..., cb) ->
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @info_path
     auth = {token: token?.access_token or token?.token or token}
     opts =
       json: true
       ca: certs
       method: 'get'
-      uri: "#{@url_base}#{@info_path}"
+      uri: "#{url_base}#{path}"
     apply_auth auth, opts
     make_request opts, cb
