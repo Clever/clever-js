@@ -9,6 +9,7 @@ Q           = require 'q'
 _.mixin(require 'underscore.deep')
 
 API_BASE = 'https://api.clever.com'
+CLEVER_BASE = 'https://clever.com'
 
 handle_errors = (resp, body, cb) ->
   return cb?(null, resp, body) if resp.statusCode is 200
@@ -23,6 +24,17 @@ apply_auth = (auth, http_opts) ->
   else if auth.token?
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
+
+make_request = (opts, cb) ->
+  p = Q.defer()
+  quest opts, (err, resp, body) ->
+    handle_errors resp, body, (err, resp, body) ->
+      p.reject err if err
+      p.resolve body?.data
+      return cb?(err) if err
+      cb?(err, body?.data)
+  return cb if _.isFunction(cb)
+  p.promise
 
 Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
   throw new Error 'Must provide auth' if not auth
@@ -300,24 +312,43 @@ Clever.me = (token, url_base..., cb) ->
       cb?(err, body?.data)
   return promise.promise
 
-Clever.oauth_tokens = (client_id, client_secret, optional..., cb) ->
-  promise = Q.defer()
-  owner_type = optional?.owner_type
-  owner_type ?= 'district'
-  url_base = options?.url_base
-  url_base ?= 'https://clever.com'
-  path = optional?.path
-  path ?= '/oauth/tokens'
-  opts =
-    method: 'get'
-    ca: certs
-    json: true
-    auth: "#{client_id}:#{client_secret}"
-    uri: "#{url_base}#{path}?owner_type=#{owner_type}"
-  quest opts, (err, resp, body) ->
-    handle_errors resp, body, (err, resp, body) ->
-      promise.reject err if err
-      promise.resolve body?.data
-      return cb?(err) if err
-      cb?(err, body?.data)
-  return promise.promise
+
+Clever.OAuth = class OAuth
+  @url_base: CLEVER_BASE
+  @tokens_path: '/oauth/tokens'
+  @info_path: '/oauth/tokeninfo'
+
+  @tokens: (client_id, client_secret, optional..., cb) ->
+    owner_type = optional[0]
+    owner_type ?= 'district'
+    opts =
+      method: 'get'
+      ca: certs
+      json: true
+      auth: "#{client_id}:#{client_secret}"
+      uri: "#{@url_base}#{@tokens_path}?owner_type=#{owner_type}"
+    make_request opts, cb
+
+  @token: (client_id, client_secret, code, redirect_uri, cb) ->
+    opts =
+      auth: "#{client_id}:#{client_secret}"
+      ca: certs
+      method: 'post'
+      uri: "#{@base_url}#{@tokens_path}"
+      json:
+        grant_type: 'authorization_code'
+        code: code
+        redirect_uri: redirect_uri
+    make_request opts, cb
+
+  @tokenInfo: (token, cb) ->
+    auth = {token: token} if _.isString(token)
+    auth ?= {token: token.access_token or token.token}
+    opts =
+      json: true
+      ca: certs
+      method: 'get'
+      uri: "#{@url_base}#{@info_path}"
+    apply_auth auth, opts
+    console.log opts.uri, opts.headers
+    make_request opts, cb
