@@ -32,9 +32,9 @@ make_request = (opts, cb) ->
     quest opts, (err, resp, body) ->
       handle_errors resp, body, (err, resp, body) ->
         reject err if err
-        resolve body?.data
+        resolve body?.data or body
         return cb?(err) if err
-        cb?(err, body?.data)
+        cb?(err, body?.data or body)
   return cb if _.isFunction(cb)
   promise
 
