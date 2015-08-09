@@ -4,6 +4,7 @@ quest       = require 'quest'
 dotty       = require 'dotty'
 certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
+Q           = require 'q'
 _.mixin(require 'underscore.deep')
 
 API_BASE = 'https://api.clever.com'
@@ -95,6 +96,7 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       @
 
     exec: (cb) =>
+      promise = Q.defer()
       opts =
         method: 'get'
         uri: @_url
@@ -106,7 +108,11 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       waterfall = [async.apply quest, opts].concat(@_post.exec or [])
-      async.waterfall waterfall, cb
+      async.waterfall waterfall, (err, data) ->
+        promise.reject err if err
+        promise.resolve data
+        cb?(err, data)
+      return promise.promise
 
     stream: () => new QueryStream @
 
@@ -116,6 +122,7 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       super()
       @post 'exec', handle_errors
     exec: (cb) =>
+      promise = Q.defer()
       opts =
         method: @_method
         uri: @_uri
@@ -124,7 +131,11 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
-      async.waterfall waterfall, cb
+      async.waterfall waterfall, (err, data) ->
+        promise.reject err if err
+        promise.resolve data
+        cb?(err, data)
+      return promise.promise
   class Update extends Writeback
     _method: 'patch'
   class Create extends Writeback
@@ -181,15 +192,15 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       if not cb
         q = @find conditions, fields, find_options
         q.post 'exec', (results, cb_post) -> cb_post null, results[0]
-        q
+        return q
       else
-        @find conditions, fields, find_options, (err, docs) -> cb err, docs?[0]
+        return @find conditions, fields, find_options, (err, docs) -> cb err, docs?[0]
 
     @findById: (id, fields, find_options, cb) ->
       throw new Error 'must specify an ID for findById' unless _(id).isString()
       conditions = id: id
       [conditions, fields, find_options, cb] = @_process_args conditions, fields, find_options, cb
-      @findOne conditions, fields, find_options, cb
+      return @findOne conditions, fields, find_options, cb
 
     constructor: (@_properties, @_uri, @_links) -> @_unsaved_values = {}
 
@@ -214,12 +225,12 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
         @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
         cb_post null # No error if we got this far
-      w.exec cb
+      return w.exec cb
 
     remove: (cb) =>
       r = new Remove "#{clever.url_base}#{@_uri}"
       r.post 'exec', (resp, body, cb_post) -> cb_post null # No error if we got this far
-      r.exec cb
+      return r.exec cb
 
     to_json: => _(@_properties).clone()
 
@@ -269,6 +280,7 @@ module.exports.handle_errors = handle_errors
 Clever.handle_errors = handle_errors
 
 Clever.me = (token, url_base..., cb) ->
+  promise = Q.defer()
   url_base = url_base[0]
   url_base ?= API_BASE
   auth = {token: token} if _.isString(token)
@@ -281,10 +293,14 @@ Clever.me = (token, url_base..., cb) ->
   apply_auth auth, opts
   quest opts, (err, resp, body) ->
     handle_errors resp, body, (err, resp, body) ->
+      promise.reject err if err
+      promise.resolve body?.data
       return cb?(err) if err
       cb?(err, body?.data)
+  return promise.promise
 
 Clever.oauth_tokens = (client_id, client_secret, optional..., cb) ->
+  promise = Q.defer()
   owner_type = optional?.owner_type
   owner_type ?= 'district'
   url_base = options?.url_base
@@ -299,5 +315,8 @@ Clever.oauth_tokens = (client_id, client_secret, optional..., cb) ->
     uri: "#{url_base}#{path}?owner_type=#{owner_type}"
   quest opts, (err, resp, body) ->
     handle_errors resp, body, (err, resp, body) ->
+      promise.reject err if err
+      promise.resolve body?.data
       return cb?(err) if err
       cb?(err, body?.data)
+  return promise.promise
