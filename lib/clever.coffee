@@ -109,7 +109,7 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       @
 
     exec: (cb) =>
-      promise = Q.defer()
+      p = Q.defer()
       opts =
         method: 'get'
         uri: @_url
@@ -122,10 +122,12 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       waterfall = [async.apply quest, opts].concat(@_post.exec or [])
       async.waterfall waterfall, (err, data) ->
-        promise.reject err if err
-        promise.resolve data
+        p.reject err if err
+        p.resolve data
+        return cb?(err) if err
         cb?(err, data)
-      return promise.promise
+      return cb if _.isFunction(cb)
+      p.promise
 
     stream: () => new QueryStream @
 
@@ -135,7 +137,7 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       super()
       @post 'exec', handle_errors
     exec: (cb) =>
-      promise = Q.defer()
+      p = Q.defer()
       opts =
         method: @_method
         uri: @_uri
@@ -145,10 +147,12 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       apply_auth clever.auth, opts
       waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
       async.waterfall waterfall, (err, data) ->
-        promise.reject err if err
-        promise.resolve data
+        p.reject err if err
+        p.resolve data
+        return cb?(err) if err
         cb?(err, data)
-      return promise.promise
+      return cb if _.isFunction(cb)
+      p.promise
   class Update extends Writeback
     _method: 'patch'
   class Create extends Writeback
