@@ -346,5 +346,4 @@ Clever.OAuth = class OAuth
       method: 'get'
       uri: "#{@url_base}#{@info_path}"
     apply_auth auth, opts
-    console.log opts.uri, opts.headers
     make_request opts, cb
