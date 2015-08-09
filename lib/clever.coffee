@@ -330,7 +330,7 @@ Clever.OAuth = class OAuth
       auth: "#{client_id}:#{client_secret}"
       ca: certs
       method: 'post'
-      uri: "#{@base_url}#{@tokens_path}"
+      uri: "#{@url_base}#{@tokens_path}"
       json:
         grant_type: 'authorization_code'
         code: code
