@@ -1,3 +1,4 @@
+# vim: set sw=2 ts=2 softtabstop=2 expandtab tw=120 :
 async       = require 'async'
 _           = require 'underscore'
 quest       = require 'quest'
