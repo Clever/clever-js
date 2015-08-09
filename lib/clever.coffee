@@ -6,6 +6,8 @@ certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 _.mixin(require 'underscore.deep')
 
+API_BASE = 'https://api.clever.com'
+
 handle_errors = (resp, body, cb) ->
   return cb null, resp, body if resp.statusCode is 200
   err = new Error "received statusCode #{resp.statusCode} instead of 200"
@@ -20,7 +22,7 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-Clever = module.exports = (auth, url_base='https://api.clever.com', options={}) ->
+Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -266,35 +268,36 @@ Clever = module.exports = (auth, url_base='https://api.clever.com', options={}) 
 module.exports.handle_errors = handle_errors
 Clever.handle_errors = handle_errors
 
-Clever.Token = class Token
-  @url_base: 'https://clever.com'
-  @api_base: 'https://api.clever.com'
-  @path: '/oauth/tokens'
+Clever.me = (token, url_base..., cb) ->
+  url_base = url_base[0]
+  url_base ?= API_BASE
+  auth = {token: token} if _.isString(token)
+  auth ?= {token: token.access_token}
+  opts =
+    method: 'get'
+    ca: certs
+    json: true
+    uri: "#{url_base}/me"
+  apply_auth auth, opts
+  quest opts, (err, resp, body) ->
+    handle_errors resp, body, (err, resp, body) ->
+      return cb?(err) if err
+      cb?(err, body?.data)
 
-  @find: (client_id, client_secret, owner_type..., cb) ->
-    owner_type = owner_type[0]
-    owner_type ?= 'district'
-    opts =
-      method: 'get'
-      ca: certs
-      json: true
-      auth: "#{client_id}:#{client_secret}"
-      uri: "#{@url_base}#{@path}?owner_type=#{owner_type}"
-    quest opts, (err, resp, body) ->
-      handle_errors resp, body, (err, resp, body) ->
-        return cb?(err) if err
-        cb?(err, body?.data)
-
-  @details: (token, cb) ->
-    auth = {token: token} if _.isString(token)
-    auth ?= {token: token.access_token}
-    opts =
-      method: 'get'
-      ca: certs
-      json: true
-      uri: "#{@api_base}/me"
-    apply_auth auth, opts
-    quest opts, (err, resp, body) ->
-      handle_errors resp, body, (err, resp, body) ->
-        return cb?(err) if err
-        cb?(err, body?.data)
+Clever.oauth_tokens = (client_id, client_secret, optional..., cb) ->
+  owner_type = optional?.owner_type
+  owner_type ?= 'district'
+  url_base = options?.url_base
+  url_base ?= 'https://clever.com'
+  path = optional?.path
+  path ?= '/oauth/tokens'
+  opts =
+    method: 'get'
+    ca: certs
+    json: true
+    auth: "#{client_id}:#{client_secret}"
+    uri: "#{url_base}#{path}?owner_type=#{owner_type}"
+  quest opts, (err, resp, body) ->
+    handle_errors resp, body, (err, resp, body) ->
+      return cb?(err) if err
+      cb?(err, body?.data)
