@@ -11,11 +11,11 @@ _.mixin(require 'underscore.deep')
 API_BASE = 'https://api.clever.com'
 
 handle_errors = (resp, body, cb) ->
-  return cb null, resp, body if resp.statusCode is 200
+  return cb?(null, resp, body) if resp.statusCode is 200
   err = new Error "received statusCode #{resp.statusCode} instead of 200"
   err.body = body
   err.resp = resp
-  cb err
+  cb?(err)
 
 apply_auth = (auth, http_opts) ->
   if auth.api_key?
