@@ -193,15 +193,15 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       if not cb
         q = @find conditions, fields, find_options
         q.post 'exec', (results, cb_post) -> cb_post null, results[0]
-        return q
+        q
       else
-        return @find conditions, fields, find_options, (err, docs) -> cb err, docs?[0]
+        @find conditions, fields, find_options, (err, docs) -> cb err, docs?[0]
 
     @findById: (id, fields, find_options, cb) ->
       throw new Error 'must specify an ID for findById' unless _(id).isString()
       conditions = id: id
       [conditions, fields, find_options, cb] = @_process_args conditions, fields, find_options, cb
-      return @findOne conditions, fields, find_options, cb
+      @findOne conditions, fields, find_options, cb
 
     constructor: (@_properties, @_uri, @_links) -> @_unsaved_values = {}
 
@@ -226,12 +226,12 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
         @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
         @_unsaved_values = {} if not err?
         cb_post null # No error if we got this far
-      return w.exec cb
+      w.exec cb
 
     remove: (cb) =>
       r = new Remove "#{clever.url_base}#{@_uri}"
       r.post 'exec', (resp, body, cb_post) -> cb_post null # No error if we got this far
-      return r.exec cb
+      r.exec cb
 
     to_json: => _(@_properties).clone()
 
