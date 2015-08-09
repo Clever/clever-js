@@ -285,29 +285,20 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
     Event    : Event
     Query    : Query
 
-module.exports.handle_errors = handle_errors
 Clever.handle_errors = handle_errors
 
 Clever.me = (token, url_base..., cb) ->
-  promise = Q.defer()
   url_base = url_base[0]
   url_base ?= API_BASE
   auth = {token: token} if _.isString(token)
-  auth ?= {token: token.access_token}
+  auth ?= {token: token.access_token or token.token}
   opts =
     method: 'get'
     ca: certs
     json: true
     uri: "#{url_base}/me"
   apply_auth auth, opts
-  quest opts, (err, resp, body) ->
-    handle_errors resp, body, (err, resp, body) ->
-      promise.reject err if err
-      promise.resolve body?.data
-      return cb?(err) if err
-      cb?(err, body?.data)
-  return promise.promise
-
+  make_request opts, cb
 
 Clever.OAuth = class OAuth
   @url_base: CLEVER_BASE
