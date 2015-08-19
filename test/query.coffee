@@ -85,13 +85,12 @@ _([
         assert.equal district.get('name'), 'Demo District'
         done()
 
-    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
-    it.skip 'find with a where condition', (done) ->
-      @clever.School.find().where('name').equals('Clever High School').exec (err, schools) =>
+    it 'find with a where condition', (done) ->
+      @clever.School.find().where('name').equals('City High School').exec (err, schools) =>
         assert.equal schools.length, 1
         school = schools[0]
         assert (school instanceof @clever.School), "Incorrect type on school object"
-        assert.equal school.get('name'), 'Clever High School'
+        assert.equal school.get('name'), 'City High School'
         done()
 
     it 'successfully generates correct link with ending_before', (done) ->
@@ -141,9 +140,8 @@ _([
         assert.ifError err
         done()
 
-    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
-    it.skip 'count works', (done) ->
-      @clever.School.find().where('name').equals('Clever High School').count().exec (err, count) ->
+    it 'count works', (done) ->
+      @clever.School.find().where('name').equals('City High School').count().exec (err, count) ->
         assert.equal count, 1
         done()
 
