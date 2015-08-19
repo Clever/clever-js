@@ -190,6 +190,43 @@ _([
         assert.equal count, 0
         done()
 
+    it 'works with single distinct field', (done) ->
+      @clever.Student.find().distinct('ell_status').exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 2
+        if results[0] == 'Y'
+          assert.equal results[1], 'N'
+        else
+          assert.equal results[0], 'N'
+          assert.equal results[1], 'Y'
+        done()
+
+    it 'works with multiple distinct fields', (done) ->
+      @clever.Student.find().distinct('ell_status').distinct('gender').exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 4
+        num_of = (ell_status, gender) ->
+          _.chain(results).filter((r) -> r.ell_status == ell_status and r.gender == gender)
+            .size().value()
+        assert.equal (num_of 'N', 'F'), 1
+        assert.equal (num_of 'N', 'M'), 1
+        assert.equal (num_of 'Y', 'F'), 1
+        assert.equal (num_of 'Y', 'M'), 1
+        done()
+
+    it 'works with an array passed to distinct', (done) ->
+      @clever.Student.find().distinct(['ell_status', 'gender']).exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 4
+        num_of = (ell_status, gender) ->
+          _.chain(results).filter((r) -> r.ell_status == ell_status and r.gender == gender)
+            .size().value()
+        assert.equal (num_of 'N', 'F'), 1
+        assert.equal (num_of 'N', 'M'), 1
+        assert.equal (num_of 'Y', 'F'), 1
+        assert.equal (num_of 'Y', 'M'), 1
+        done()
+
     it 'successfully handles invalid get requests that return a json', (done) ->
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
