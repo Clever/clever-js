@@ -13,19 +13,19 @@
   ],
   "dependencies": {
     "async": "~0.2.5",
-    "underscore": "~1.4.4",
     "coffee-script": "~1.6.0",
-    "underscore.string": "~2.3.1",
     "dotty": "0.0.1",
     "quest": "~0.2.4",
     "readable-stream": "~1.0.2",
-    "underscore.deep": "~0.5.1"
+    "underscore": "~1.4.4",
+    "underscore.deep": "~0.5.1",
+    "underscore.string": "~2.3.1"
   },
   "devDependencies": {
     "mocha": "~1.7.4",
+    "nock": "~0.37.0",
     "sinon": "~1.7.3",
-    "understream": "~0.8.0",
-    "nock": "~0.37.0"
+    "understream": "~0.8.0"
   },
   "engines": {
     "node": ">=0.10.x",
