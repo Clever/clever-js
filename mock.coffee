@@ -26,13 +26,9 @@ module.exports = (api_key, data_dir) ->
   # clever.db[resource] are arrays of resources
   clever.db =
     districts: trequire("#{data_dir}/districts")
-    districtproperties: trequire("#{data_dir}/districtproperties")
     students: trequire("#{data_dir}/students")
-    studentproperties: trequire("#{data_dir}/studentproperties")
     teachers: trequire("#{data_dir}/teachers")
-    teacherproperties: trequire("#{data_dir}/teacherproperties")
     schools: trequire("#{data_dir}/schools")
-    schoolproperties: trequire("#{data_dir}/schoolproperties")
 
   # clever.map[resources] are maps from ids to resources (for faster lookup)
   # This doesn't just replace clever.db for compatibility reasons..for now..
@@ -43,13 +39,9 @@ module.exports = (api_key, data_dir) ->
       map
     clever.map =
       districts: map_id_to_val clever.db, 'districts', 'id'
-      districtproperties: map_id_to_val clever.db, 'districtproperties', 'district'
       students: map_id_to_val clever.db, 'students', 'id'
-      studentproperties: map_id_to_val clever.db, 'studentproperties', 'student'
       teachers: map_id_to_val clever.db, 'teachers', 'id'
-      teacherproperties: map_id_to_val clever.db, 'teacherproperties', 'teacher'
       schools: map_id_to_val clever.db, 'schools', 'id'
-      schoolproperties: map_id_to_val clever.db, 'schoolproperties', 'school'
   clever.refresh_map()
 
   sandbox = sinon.sandbox.create()
@@ -75,29 +67,5 @@ module.exports = (api_key, data_dir) ->
     resource = _.strRightBack(@_url, '/')
     s = apply_query new Understream(clever.db[resource]), @_conditions, resource
     return s.stream()
-
-  sandbox.stub clever.Resource.prototype, 'properties', (obj, cb) ->
-    if arguments.length is 1
-      cb = obj
-      obj = undefined
-    else if arguments.length isnt 2
-      throw new Error("expected 1 or 2 arguments to properties")
-    resource = @constructor.name.toLowerCase() + 's'
-    resource_singular = _(resource).rtrim('s')
-    id = @_properties.id
-    clever_resource = clever.map[resource][id]
-    return setImmediate cb(new Error("404")) unless clever_resource?
-    resource_property = "#{resource_singular}properties"
-    prop_obj = clever.map[resource_property][id]
-    if not prop_obj
-      prop_obj = _.object [[resource_singular, id], ['data', {}]]
-      clever.db[resource_property].push prop_obj
-      clever.map[resource_property][id] = prop_obj
-    if obj
-      dotty.put prop_obj.data, k, v for k, v of obj
-      if obj.google_apps?.username?
-        clever_resource._shadow ?= {}
-        clever_resource._shadow.email = obj.google_apps.username
-    setImmediate cb, null, _.deepClone prop_obj.data
 
   clever

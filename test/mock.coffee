@@ -43,43 +43,6 @@ describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
           cb_wf()
     ], done
 
-
-  it "supports GETting properties", (done) ->
-    @clever.Student.find().exec (err, students) => # TODO: get findOne working
-      students[0].properties (err, data) =>
-        assert.ifError err
-        assert.deepEqual data, _(require("#{__dirname}/mock_data/studentproperties")).findWhere({student: students[0].get('id')}).data
-        done()
-
-  it "supports deep copies of properties", (done) -> # depends on previous test
-    async.waterfall [
-      (cb_wf) =>
-        @clever.Student.find().exec (err, students) =>
-          students[0].properties (err, data) =>
-            assert.ifError err
-            assert.equal data.foo, "bar"
-            data.foo = 'WRONG FOO'
-            cb_wf()
-      (cb_wf) =>
-        @clever.Student.find().exec (err, students) =>
-          students[0].properties (err, data) =>
-            assert.ifError err
-            assert.equal data.foo, "bar"
-            cb_wf()
-    ], done
-
-  it "supports PUTting properties", (done) ->
-    @clever.Student.find().exec (err, students) =>
-      assert.ifError err
-      students[1].properties {foo: 'baz'}, (err, data) =>
-        assert.ifError err
-        assert.deepEqual data, {foo: 'baz'}
-        @clever.Student.find().exec (err, students) =>
-          assert.ifError err
-          students[1].properties (err, data) =>
-            assert.deepEqual data, {foo: 'baz'}
-            done()
-
   describe 'findById', ->
     _.each ['51a5a56f4867bbdf51054055', '51a5a56f4867bbdf51054054'], (id) ->
       it "finds a student", (done) ->
