@@ -1,15 +1,15 @@
 _           = require 'underscore'
 assert      = require 'assert'
-async      = require 'async'
+async       = require 'async'
 Clever      = require "#{__dirname}/../index"
-Understream = require 'understream'
+highland    = require 'highland'
 
 describe "require('clever/mock') [API KEY] [MOCK DATA DIR]", ->
   before ->
     @clever = require("#{__dirname}/../mock") 'api key', "#{__dirname}/mock_data"
 
   it "supports streaming GETs", (done) ->
-    new Understream(@clever.Student.find().stream()).invoke('toJSON').run (err, data) ->
+    highland(@clever.Student.find().stream()).invoke("toJSON").collect().toCallback (err, data) ->
       assert.ifError err
       assert.deepEqual data, require("#{__dirname}/mock_data/students")
       done()
