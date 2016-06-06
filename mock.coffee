@@ -3,7 +3,7 @@ dotty       = require 'dotty'
 fs          = require 'fs'
 Readable    = require 'readable-stream'
 sinon       = require 'sinon'
-Understream = require 'understream'
+highland    = require 'highland'
 _.mixin require('underscore.string').exports()
 _.mixin require('underscore.deep')
 
@@ -46,8 +46,8 @@ module.exports = (api_key, data_dir) ->
 
   sandbox = sinon.sandbox.create()
 
-  apply_query = (undersomething, conditions, resource) ->
-    return undersomething.filter (obj) ->
+  apply_query = (highlandsomething, conditions, resource) ->
+    return highlandsomething.filter (obj) ->
       for key, val of conditions
         return false unless obj[key] is val
       return true
@@ -59,13 +59,15 @@ module.exports = (api_key, data_dir) ->
 
   sandbox.stub clever.Query.prototype, 'exec', (cb) ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query _(clever.db[resource]).chain(), @_conditions, resource
-    return setImmediate cb, null, s.value().length if @_options.count
-    setImmediate cb, null, s.value()
+    s = apply_query highland(clever.db[resource]), @_conditions, resource
+    s.collect().toCallback (err, data) =>
+      return setImmediate cb err if err?
+      return setImmediate cb, null, data.length if @_options.count
+      setImmediate cb, null, data
 
   sandbox.stub clever.Query.prototype, 'stream', ->
     resource = _.strRightBack(@_url, '/')
-    s = apply_query new Understream(clever.db[resource]), @_conditions, resource
-    return s.stream()
+    s = apply_query highland(clever.db[resource]), @_conditions, resource
+    return s
 
   clever
