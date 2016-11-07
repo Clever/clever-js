@@ -19,11 +19,6 @@ var clever = Clever({token: 'YOUR_BEARER_TOKEN'});
 If you'd like to play around with our test data, please use the token: `DEMO_TOKEN`.
 See [our developer guide](https://clever.com/developers/docs) for more information.
 
-To use the outdated API key authentication method (not recommended!) pass the key when instantiating:
-```javascript
-var clever = Clever('YOUR_API_KEY');
-```
-
 The `clever` package exposes objects corresponding to resources:
 
 * District
