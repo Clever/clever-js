@@ -85,13 +85,12 @@ _([
         assert.equal district.get('name'), 'Demo District'
         done()
 
-    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
-    it.skip 'find with a where condition', (done) ->
-      @clever.School.find().where('name').equals('Clever High School').exec (err, schools) =>
+    it 'find with a where condition', (done) ->
+      @clever.School.find().where('name').equals('City High School').exec (err, schools) =>
         assert.equal schools.length, 1
         school = schools[0]
         assert (school instanceof @clever.School), "Incorrect type on school object"
-        assert.equal school.get('name'), 'Clever High School'
+        assert.equal school.get('name'), 'City High School'
         done()
 
     it 'successfully generates correct link with ending_before', (done) ->
@@ -141,9 +140,8 @@ _([
         assert.ifError err
         done()
 
-    # Failing because test data changed. See: https://clever.atlassian.net/browse/APPS-200
-    it.skip 'count works', (done) ->
-      @clever.School.find().where('name').equals('Clever High School').count().exec (err, count) ->
+    it 'count works', (done) ->
+      @clever.School.find().where('name').equals('City High School').count().exec (err, count) ->
         assert.equal count, 1
         done()
 
@@ -190,6 +188,43 @@ _([
     it 'exists false works', (done) ->
       @clever.School.find().exists('name', false).count().exec (err, count) ->
         assert.equal count, 0
+        done()
+
+    it 'works with single distinct field', (done) ->
+      @clever.Student.find().distinct('ell_status').exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 2
+        if results[0] == 'Y'
+          assert.equal results[1], 'N'
+        else
+          assert.equal results[0], 'N'
+          assert.equal results[1], 'Y'
+        done()
+
+    it 'works with multiple distinct fields', (done) ->
+      @clever.Student.find().distinct('ell_status').distinct('gender').exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 4
+        num_of = (ell_status, gender) ->
+          _.chain(results).filter((r) -> r.ell_status == ell_status and r.gender == gender)
+            .size().value()
+        assert.equal (num_of 'N', 'F'), 1
+        assert.equal (num_of 'N', 'M'), 1
+        assert.equal (num_of 'Y', 'F'), 1
+        assert.equal (num_of 'Y', 'M'), 1
+        done()
+
+    it 'works with an array passed to distinct', (done) ->
+      @clever.Student.find().distinct(['ell_status', 'gender']).exec (err, results) ->
+        assert _.isArray results
+        assert.equal results.length, 4
+        num_of = (ell_status, gender) ->
+          _.chain(results).filter((r) -> r.ell_status == ell_status and r.gender == gender)
+            .size().value()
+        assert.equal (num_of 'N', 'F'), 1
+        assert.equal (num_of 'N', 'M'), 1
+        assert.equal (num_of 'Y', 'F'), 1
+        assert.equal (num_of 'Y', 'M'), 1
         done()
 
     it 'successfully handles invalid get requests that return a json', (done) ->

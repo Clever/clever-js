@@ -84,6 +84,16 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       @_conditions[path].$exists = val
       @
 
+    distinct: (path) =>
+      if not arguments.length
+        path = @_curr_path
+      @_distinct ?= []
+      if _.isArray path
+        @_distinct = @_distinct.concat path
+      else
+        @_distinct.push path
+      @
+
     select: (arg) =>
       console.log 'WARNING: TODO: select fields in the API' if arg
       @
@@ -93,6 +103,7 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       @
 
     exec: (cb) =>
+      _.extend @_options, distinct: @_distinct.join ',' if @_distinct?
       opts =
         method: 'get'
         uri: @_url
@@ -139,7 +150,9 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       q.select fields
       q.post 'exec', (resp, body, cb_post) =>
         q.links = body.links
-        if body.data
+        if q._distinct?
+          cb_post null, body.data
+        else if body.data
           results = _(body.data).map (doc) =>
             Klass = @_uri_to_class doc.uri
             new Klass doc.data, doc.uri, doc.links
