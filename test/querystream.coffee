@@ -6,7 +6,7 @@ Clever    = require "#{__dirname}/../index"
 
 describe 'querystream', ->
 
-  before -> @clever = Clever 'DEMO_KEY', 'https://api.clever.com'
+  before -> @clever = Clever {token: 'DEMO_TOKEN'}, 'https://api.clever.com'
 
   it 'takes care of paging for you', (done) ->
     @timeout 40000
