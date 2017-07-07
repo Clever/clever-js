@@ -178,17 +178,17 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
     toJSON: => @to_json()
 
   class District extends Resource
-    @path: '/v1.1/districts'
+    @path: '/v1.2/districts'
   class School extends Resource
-    @path: '/v1.1/schools'
+    @path: '/v1.2/schools'
   class Section extends Resource
-    @path: '/v1.1/sections'
+    @path: '/v1.2/sections'
   class Student extends Resource
-    @path: '/v1.1/students'
+    @path: '/v1.2/students'
   class Teacher extends Resource
-    @path: '/v1.1/teachers'
+    @path: '/v1.2/teachers'
   class Event extends Resource
-    @path: '/v1.1/events'
+    @path: '/v1.2/events'
 
   _(clever).extend
     Resource : Resource
