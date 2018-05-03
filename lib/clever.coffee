@@ -5,6 +5,17 @@ dotty       = require 'dotty'
 certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 _.mixin(require 'underscore.deep')
+retry  = require 'retry'
+
+retryify = (fn, retry_options, test) ->
+  test = test or (err) -> err
+  (args..., cb) ->
+    operation = retry.operation retry_options
+    operation.attempt ->
+      fn args..., (err, rest...) ->
+        return if operation.retry test(err)
+        return cb err if err
+        cb null, rest...
 
 handle_errors = (resp, body, cb) ->
   return cb null, resp, body if resp.statusCode is 200
@@ -103,7 +114,8 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       apply_auth clever.auth, opts
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
-      waterfall = [async.apply quest, opts].concat(@_post.exec or [])
+
+      waterfall = [retryify(async.apply(quest, opts), {retries: 5, factor: 3})].concat(@_post.exec or [])
       async.waterfall waterfall, cb
 
     stream: () => new QueryStream @
