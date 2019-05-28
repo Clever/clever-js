@@ -17,7 +17,7 @@
     "dotty": "0.0.1",
     "highland": "^2.8.1",
     "quest": "~0.2.4",
-    "readable-stream": "~1.0.2",
+    "readable-stream": "~3.4.0",
     "underscore": "~1.4.4",
     "underscore.deep": "~0.5.1",
     "underscore.string": "~2.3.1"
