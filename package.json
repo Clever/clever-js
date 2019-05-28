@@ -13,7 +13,7 @@
   ],
   "dependencies": {
     "async": "~0.2.5",
-    "coffee-script": "~1.6.0",
+    "coffee-script": "~1.12.7",
     "dotty": "0.0.1",
     "highland": "^2.8.1",
     "quest": "~0.2.4",
