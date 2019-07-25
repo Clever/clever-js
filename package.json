@@ -16,7 +16,7 @@
     "coffee-script": "~1.6.0",
     "dotty": "0.0.1",
     "highland": "^2.8.1",
-    "quest": "~0.2.4",
+    "quest": "~0.4.0",
     "readable-stream": "~3.4.0",
     "underscore": "~1.4.4",
     "underscore.deep": "~0.5.1",
