@@ -20,7 +20,7 @@
     "readable-stream": "~3.4.0",
     "underscore": "~1.4.4",
     "underscore.deep": "~0.5.1",
-    "underscore.string": "~2.3.1"
+    "underscore.string": "~3.3.5"
   },
   "devDependencies": {
     "mocha": "~1.7.4",
