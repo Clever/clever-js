@@ -2,7 +2,6 @@ async       = require 'async'
 _           = require 'underscore'
 quest       = require 'quest'
 dotty       = require 'dotty'
-certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 _.mixin(require 'underscore.deep')
 
@@ -98,7 +97,6 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
         uri: @_url
         qs: _({where: @_conditions}).extend @_options
         json: true
-        ca: certs
       _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       # convert stringify nested query params
