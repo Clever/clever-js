@@ -1,3 +1,6 @@
+# NOTICE
+This library is no longer maintained by Clever, but if you would like to generate your own using the swagger file, it is available at https://github.com/Clever/swagger-api.
+
 # Clever Javascript Library
 
 [![Build Status](https://secure.travis-ci.org/Clever/clever-js.png)](http://travis-ci.org/Clever/clever-js)
