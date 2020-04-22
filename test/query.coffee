@@ -6,8 +6,6 @@ Clever    = require "#{__dirname}/../index"
 nock      = require 'nock'
 
 _([
-  'DEMO_KEY'
-  {api_key: 'DEMO_KEY'}
   {token: 'DEMO_TOKEN'}
 ]).each (auth) ->
   describe "query #{JSON.stringify auth}", ->
@@ -131,7 +129,7 @@ _([
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
       scope = nock('http://fake_api.com')
-        .get('/v1.1/students?where=%7B%7D&ending_before=last')
+        .get('/v1.2/students?where=%7B%7D&ending_before=last')
         .reply(401, {error: 'test succeeded'})
       clever.Student.find().ending_before('last').exec (err, students) ->
         assert not students
@@ -144,7 +142,7 @@ _([
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
       scope = nock('http://fake_api.com')
-        .get('/v1.1/students?where=%7B%7D&starting_after=12345')
+        .get('/v1.2/students?where=%7B%7D&starting_after=12345')
         .reply(401, {error: 'test succeeded'})
       clever.Student.find().starting_after('12345').exec (err, students) ->
         assert not students
@@ -229,7 +227,7 @@ _([
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
       scope = nock('http://fake_api.com')
-        .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+        .get('/v1.2/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
         .reply(401, {error: 'unauthorized'})
       clever.District.findById '12345', (err, district) ->
         assert not district
@@ -242,7 +240,7 @@ _([
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
       scope = nock('http://fake_api.com')
-        .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+        .get('/v1.2/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
         .reply(401, {error: 'unauthorized'})
       clever.District.findById('12345').exec (err, district) ->
         assert not district
@@ -255,7 +253,7 @@ _([
       @timeout 30000
       clever = Clever 'FAKE_KEY', 'http://fake_api.com'
       scope = nock('http://fake_api.com')
-        .get('/v1.1/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
+        .get('/v1.2/districts?where=%7B%22id%22%3A%2212345%22%7D&limit=1')
         .reply(401, 'unauthorized')
       clever.District.findById '12345', (err, district) ->
         assert not district

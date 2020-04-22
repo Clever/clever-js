@@ -3,7 +3,6 @@ async       = require 'async'
 _           = require 'underscore'
 quest       = require 'quest'
 dotty       = require 'dotty'
-certs       = require "#{__dirname}/data/clever.com_ca_bundle"
 QueryStream = require "#{__dirname}/querystream"
 Q           = require 'q'
 _.mixin(require 'underscore.deep')
@@ -116,7 +115,6 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
         uri: @_url
         qs: _({where: @_conditions}).extend @_options
         json: true
-        ca: certs
       _(opts).extend(headers: options.headers) if options.headers
       apply_auth clever.auth, opts
       # convert stringify nested query params
@@ -132,35 +130,6 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
       promise
 
     stream: () => new QueryStream @
-
-  class Writeback extends Middlewareable
-    _method: null
-    constructor: (@_uri, @_values) ->
-      super()
-      @post 'exec', handle_errors
-    exec: (cb) =>
-      opts =
-        method: @_method
-        uri: @_uri
-        json: @_values
-        ca: certs
-      _(opts).extend(headers: options.headers) if options.headers
-      apply_auth clever.auth, opts
-      waterfall = [async.apply quest, opts].concat(@_post['exec'] or [])
-      promise = new Promise (resolve, reject) ->
-        async.waterfall waterfall, (err, data) ->
-          reject err if err
-          resolve data
-          return cb?(err) if err
-          cb?(err, data)
-      return cb if _.isFunction(cb)
-      promise
-  class Update extends Writeback
-    _method: 'patch'
-  class Create extends Writeback
-    _method: 'post'
-  class Remove extends Writeback
-    _method: 'delete'
 
   # adds query-creating functions to a class: find, findOne, etc.
   class Resource
@@ -227,59 +196,22 @@ Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
 
     set: (key, val) => dotty.put @_unsaved_values, key, val
 
-    save: (cb) =>
-      update = @_properties.id?
-      if update
-        return cb null if not _(@_unsaved_values).keys().length
-        w = new Update "#{clever.url_base}#{@_uri}", @_unsaved_values
-      else
-        #Create with the combination of @_properties and @_unsaved_values.
-        w = new Create "#{clever.url_base}#{@constructor.path}", _.deepExtend(@_properties, @_unsaved_values)
-        w.post 'exec', (resp, body, cb_post) =>
-          self_link = _(body.links).find (link) -> link.rel is 'self'
-          return cb_post new Error 'no self link' if not self_link?
-          @_uri = self_link.uri
-          cb_post null, resp, body
-      w.post 'exec', (resp, body, cb_post) =>
-        @_properties = if _(body.data).isString() then JSON.parse body.data else body.data # httpbin doesn't return json
-        @_unsaved_values = {} if not err?
-        cb_post null # No error if we got this far
-      w.exec cb
-
-    remove: (cb) =>
-      r = new Remove "#{clever.url_base}#{@_uri}"
-      r.post 'exec', (resp, body, cb_post) -> cb_post null # No error if we got this far
-      r.exec cb
-
     to_json: => _(@_properties).clone()
 
     toJSON: => @to_json()
 
-    properties: (obj, cb) =>
-      opts =
-        method: 'patch'
-        uri: "#{clever.url_base}#{@constructor.path}/#{@_properties.id}/properties"
-        json: obj
-        ca: certs
-      _(opts).extend(headers: options.headers) if options.headers
-      apply_auth clever.auth, opts
-      if not obj or _(obj).isFunction()
-        cb = obj
-        _(opts).extend { method: 'get', json: true }
-      make_request opts, cb
-
   class District extends Resource
-    @path: '/v1.1/districts'
+    @path: '/v1.2/districts'
   class School extends Resource
-    @path: '/v1.1/schools'
+    @path: '/v1.2/schools'
   class Section extends Resource
-    @path: '/v1.1/sections'
+    @path: '/v1.2/sections'
   class Student extends Resource
-    @path: '/v1.1/students'
+    @path: '/v1.2/students'
   class Teacher extends Resource
-    @path: '/v1.1/teachers'
+    @path: '/v1.2/teachers'
   class Event extends Resource
-    @path: '/v1.1/events'
+    @path: '/v1.2/events'
 
   _(clever).extend
     Resource : Resource
