@@ -1,3 +1,4 @@
+# vim: set sw=2 ts=2 softtabstop=2 expandtab tw=120 :
 async       = require 'async'
 _           = require 'underscore'
 quest       = require 'quest'
@@ -5,12 +6,15 @@ dotty       = require 'dotty'
 QueryStream = require "#{__dirname}/querystream"
 _.mixin(require 'underscore.deep')
 
+API_BASE = 'https://api.clever.com'
+CLEVER_BASE = 'https://clever.com'
+
 handle_errors = (resp, body, cb) ->
-  return cb null, resp, body if resp.statusCode is 200
+  return cb?(null, resp, body) if resp.statusCode is 200
   err = new Error "received statusCode #{resp.statusCode} instead of 200"
   err.body = body
   err.resp = resp
-  cb err
+  cb?(err)
 
 apply_auth = (auth, http_opts) ->
   if auth.api_key?
@@ -19,7 +23,18 @@ apply_auth = (auth, http_opts) ->
     http_opts.headers ?= {}
     _(http_opts.headers).extend Authorization: "Bearer #{auth.token}"
 
-module.exports = (auth, url_base='https://api.clever.com', options={}) ->
+make_request = (opts, cb) ->
+  promise = new Promise (resolve, reject) ->
+    quest opts, (err, resp, body) ->
+      handle_errors resp, body, (err, resp, body) ->
+        reject err if err
+        resolve body?.data or body
+        return cb?(err) if err
+        cb?(err, body?.data or body)
+  return cb if _.isFunction(cb)
+  promise
+
+Clever = module.exports = (auth, url_base=API_BASE, options={}) ->
   throw new Error 'Must provide auth' if not auth
   auth = {api_key: auth} if _.isString auth
   clever =
@@ -102,7 +117,14 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
       # convert stringify nested query params
       opts.qs[key] = JSON.stringify val for key, val of opts.qs when _(val).isObject()
       waterfall = [async.apply quest, opts].concat(@_post.exec or [])
-      async.waterfall waterfall, cb
+      promise = new Promise (resolve, reject) ->
+        async.waterfall waterfall, (err, data) ->
+          reject err if err
+          resolve data
+          return cb?(err) if err
+          cb?(err, data)
+      return cb if _.isFunction(cb)
+      promise
 
     stream: () => new QueryStream @
 
@@ -198,4 +220,59 @@ module.exports = (auth, url_base='https://api.clever.com', options={}) ->
     Event    : Event
     Query    : Query
 
-module.exports.handle_errors = handle_errors
+Clever.handle_errors = handle_errors
+
+Clever.setPromiseProvider = (Provider) ->
+  Promise = Provider if _.isFunction(Provider)
+
+Clever.me = (token, optional..., cb) ->
+  auth = {token: token?.access_token or token?.token or token}
+  url_base = optional?.url_base or API_BASE
+  path = optional?.path or '/me'
+  opts =
+    method: 'get'
+    json: true
+    uri: "#{url_base}#{path}"
+  apply_auth auth, opts
+  make_request opts, cb
+
+Clever.OAuth = class OAuth
+  @url_base: CLEVER_BASE
+  @tokens_path: '/oauth/tokens'
+  @info_path: '/oauth/tokeninfo'
+
+  @tokens: (client_id, client_secret, optional..., cb) ->
+    owner_type = optional?.owner_type or 'district'
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @tokens_path
+    opts =
+      method: 'get'
+      json: true
+      auth: "#{client_id}:#{client_secret}"
+      uri: "#{url_base}#{path}?owner_type=#{owner_type}"
+    make_request opts, cb
+
+  @token: (client_id, client_secret, code, redirect_uri, optional..., cb) ->
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @tokens_path
+    grant_type = optional?.grant_type or 'authorization_code'
+    opts =
+      auth: "#{client_id}:#{client_secret}"
+      method: 'post'
+      uri: "#{url_base}#{path}"
+      json:
+        grant_type: grant_type
+        code: code
+        redirect_uri: redirect_uri
+    make_request opts, cb
+
+  @tokenInfo: (token, optional..., cb) ->
+    url_base = optional?.url_base or @url_base
+    path = optional?.path or @info_path
+    auth = {token: token?.access_token or token?.token or token}
+    opts =
+      json: true
+      method: 'get'
+      uri: "#{url_base}#{path}"
+    apply_auth auth, opts
+    make_request opts, cb
