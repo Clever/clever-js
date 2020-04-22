@@ -1,3 +1,4 @@
+# vim: set sw=2 ts=2 softtabstop=2 expandtab tw=120 :
 async     = require 'async'
 fs        = require 'fs'
 assert    = require 'assert'
@@ -28,6 +29,26 @@ describe 'querystream', ->
           done()
     ], assert.ifError
 
+  it 'does not call end while paused', (done) ->
+    @timeout 40000
+    async.waterfall [
+      (cb_w) =>
+        query = @clever.Section.find().count().exec cb_w
+      (count, cb_w) =>
+        query = @clever.Section.find().limit(100)
+        stream = query.stream()
+        cur = 0
+        stream.on 'data', (section) =>
+          assert (section instanceof @clever.Section), 'Incorrect type on section object'
+          stream.pause()
+          process.nextTick () ->
+            cur += 1
+            stream.resume()
+        stream.on 'error', (err) -> assert false, "There shouldn't be an error: #{err}"
+        stream.on 'end', (err) ->
+          assert cur is count, "Only got #{cur}/#{count} entries!"
+          done()
+    ], assert.ifError
 
   it 'handles errors correctly', (done) ->
     clever = Clever 'INVALID_KEY', 'https://api.clever.com'
