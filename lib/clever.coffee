@@ -4,13 +4,10 @@ _           = require 'underscore'
 quest       = require 'quest'
 dotty       = require 'dotty'
 QueryStream = require "#{__dirname}/querystream"
-Q           = require 'q'
 _.mixin(require 'underscore.deep')
 
 API_BASE = 'https://api.clever.com'
 CLEVER_BASE = 'https://clever.com'
-
-Promise = Q.Promise
 
 handle_errors = (resp, body, cb) ->
   return cb?(null, resp, body) if resp.statusCode is 200
@@ -234,7 +231,6 @@ Clever.me = (token, optional..., cb) ->
   path = optional?.path or '/me'
   opts =
     method: 'get'
-    ca: certs
     json: true
     uri: "#{url_base}#{path}"
   apply_auth auth, opts
@@ -251,7 +247,6 @@ Clever.OAuth = class OAuth
     path = optional?.path or @tokens_path
     opts =
       method: 'get'
-      ca: certs
       json: true
       auth: "#{client_id}:#{client_secret}"
       uri: "#{url_base}#{path}?owner_type=#{owner_type}"
@@ -263,7 +258,6 @@ Clever.OAuth = class OAuth
     grant_type = optional?.grant_type or 'authorization_code'
     opts =
       auth: "#{client_id}:#{client_secret}"
-      ca: certs
       method: 'post'
       uri: "#{url_base}#{path}"
       json:
@@ -278,7 +272,6 @@ Clever.OAuth = class OAuth
     auth = {token: token?.access_token or token?.token or token}
     opts =
       json: true
-      ca: certs
       method: 'get'
       uri: "#{url_base}#{path}"
     apply_auth auth, opts

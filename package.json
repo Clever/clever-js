@@ -12,7 +12,6 @@
     "library"
   ],
   "dependencies": {
-    "q": "^1.5.1",
     "async": "~3.1.0",
     "coffee-script": "~1.6.0",
     "dotty": "0.1.0",
