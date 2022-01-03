@@ -25,6 +25,7 @@
   "devDependencies": {
     "mocha": "~5.2.0",
     "nock": "~10.0.6",
+    "npm-force-resolutions": "0.0.10",
     "sinon": "~2.4.1"
   },
   "engines": {
@@ -33,9 +34,14 @@
   },
   "scripts": {
     "test": "make -Br test",
-    "test-cov": "make -Br test-cov"
+    "test-cov": "make -Br test-cov",
+    "preinstall": "npx npm-force-resolutions",
+    "postshrinkwrap": "npx npm-force-resolutions"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
+  },
+  "resolutions": {
+    "dotty": "^0.1.2"
   }
 }
