@@ -1,3 +1,7 @@
+# Notice
+
+This repo is no longer maintained by Clever. We provide the Swagger definitions at https://github.com/Clever/swagger-api.
+
 # Clever Javascript Library
 
 [![Build Status](https://secure.travis-ci.org/Clever/clever-js.png)](http://travis-ci.org/Clever/clever-js)
